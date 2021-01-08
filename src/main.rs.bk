@@ -1,0 +1,51 @@
+trait Fly {
+    fn fly(&self) -> bool;
+}
+
+struct Pig;
+struct Duck;
+
+impl Pig {
+    fn what() {
+        println!("Pig!!!");
+    }
+}
+
+impl Fly for Pig {
+    fn fly(&self) -> bool {
+        false
+    }
+}
+
+impl Fly for Duck {
+    fn fly(&self) -> bool {
+        true
+    }
+}
+
+fn fly_static<T: Fly>(a: T) -> bool {
+    a.fly()
+}
+
+use std::collections::VecDeque;
+
+fn rev() {
+    let mut st = VecDeque::new();
+    st.push_front(2);
+    st.push_front(5);
+    st.push_front(11);
+    println!("st = {:?}", st);
+    println!("{}", st.pop_front().unwrap());
+    println!("{}", st.pop_front().unwrap());
+    println!("{}", st.pop_front().unwrap());
+    // println!("{}", st.pop_front().unwrap());
+}
+
+fn main() {
+    let pig = Pig;
+    let duck = Duck;
+    println!("Can pig fly?, {}.", fly_static::<Pig>(pig));
+    println!("Can duck fly?, {}.", fly_static(duck));
+    Pig::what();
+    rev();
+}
