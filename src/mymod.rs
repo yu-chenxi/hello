@@ -5,3 +5,20 @@ pub fn sum(v: &[i32]) -> i32 {
     }
     s
 }
+
+use std::collections::VecDeque;
+pub fn is_match(s: &str) -> bool {
+    let mut st = VecDeque::new();
+    for c in s.chars() {
+        match c {
+            '(' => st.push_front(c),
+            ')' => {
+                if st.is_empty() || '(' != st.pop_front().unwrap() {
+                    return false;
+                }
+            }
+            _ => (),
+        };
+    }
+    st.is_empty()
+}
