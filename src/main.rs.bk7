@@ -1,0 +1,140 @@
+#[allow(dead_code)]
+fn longer_str<'a>(s1: &'a str, s2: &'a str) -> &'a str {
+    if s1.len() > s2.len() {
+        s1
+    } else {
+        s2
+    }
+}
+
+fn unsafe_inc(ri: &mut i32) {
+    let pi = ri as *mut i32;
+    unsafe {
+        *pi += 1;
+    }
+}
+
+fn rev(v: &mut [i32]) {
+    let mut i = 0;
+    let mut j = v.len() - 1;
+    while i < j {
+        v.swap(i, j);
+        i += 1;
+        j -= 1;
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct Pt<T>(T, T);
+
+#[derive(Debug)]
+struct Dog {
+    name: String,
+    age: u32,
+}
+
+impl Drop for Dog {
+    fn drop(self: &mut Self) {
+        println!("dog \"{}\" will sleep.", self.name);
+    }
+}
+
+use std::mem::size_of;
+
+enum Book {
+    _Papery(u32),
+    _Electronic { _url: String },
+}
+
+fn size() {
+    println!("bool size = {}", size_of::<bool>());
+    println!("char size = {}", size_of::<char>()); // utf-8
+    println!("&i32 size = {}", size_of::<&i32>()); // ptr = usize
+    println!("&str size = {}", size_of::<&str>()); // fat pointer = ptr + len = usize * 2
+    println!("String size = {}", size_of::<String>()); // ptr + len + cap = usize * 3
+    println!("&[i32] size = {}", size_of::<&[i32]>());
+    println!("Vec[i32] size = {}", size_of::<Vec<i32>>());
+    println!("&Vec[i32] size = {}", size_of::<&Vec<i32>>()); // ptr = usize
+    println!("Box<String> size = {}", size_of::<Box<String>>());
+    println!("Book size = {}", size_of::<Book>()); // usize + max(u32 size, String size) = usize * 4
+}
+
+fn main() {
+    let mut x = -1;
+    unsafe_inc(&mut x);
+    println!("x = {}", x);
+    let mut v = [2, 5, 11, 17, 23];
+    rev(&mut v);
+    println!("v = {:?}", v);
+    let pt = Pt::<f32>(3.3, -4.4);
+    println!("pt = {:?}", pt);
+    let pt2 = pt;
+    println!("pt = {:?}", pt);
+    println!("pt2 = {:?}", pt2);
+    let dog1 = Dog {
+        name: "mike".to_string(),
+        age: 3,
+    };
+    let dog2 = Dog {
+        name: "gates".to_string(),
+        age: 18,
+    };
+    println!("dog2 = {:?}", dog2);
+    {
+        dog1
+    };
+    size();
+    let s1 = "hello";
+    let _s2 = s1;
+    println!("{}", s1); // s1 is immut ref
+    let rx1 = &x;
+    // let rx2 = &mut x;
+    let _rx2 = rx1;
+    println!("{}", *rx1);
+    // for ref:
+    // rr is ok
+    // rw is not ok
+    // ww is not ok
+    // like rw-lock
+    // <T: PartialEq> is generic type decl
+    // a: T is GP using
+    fn my_eq<T: PartialEq>(a: T, b: T) -> bool {
+        a == b
+    }
+    println!("{}", my_eq::<f32>(1.1, -2.2));
+    println!("{}", my_eq(0x20u8, b' '));
+    fn my_max<T: PartialOrd>(a: T, b: T) -> T {
+        if a > b {
+            a
+        } else {
+            b
+        }
+    }
+    println!("{}", my_max::<f32>(1.1, -2.2));
+    println!("{}", my_max::<char>('c', ' '));
+    fn my_add<T: std::ops::Add<Output = T>>(a: T, b: T) -> T {
+        a + b
+    }
+    println!("{}", my_add(1.1, -2.2));
+    println!("{}", my_add(-20, 14));
+    let pt3 = Pt2::new();
+    println!("{:?}", pt3);
+}
+
+#[derive(Debug)]
+struct Pt2(f64, f64);
+
+trait New {
+    fn new() -> Self;
+}
+
+impl New for Pt2 {
+    fn new() -> Self {
+        Pt2(0.0, 0.0)
+    }
+}
+
+// smart ptr has the owership of the resource
+// but ref is just a borrowing of owership(for using)
+// val semantic: = copy bit by bit
+// ref semantic: = transfer owership
