@@ -1,0 +1,52 @@
+/*
+crate: n. 包(=package)
+dismiss: v. 不予理会c
+emit: v. 发射
+code smell: n. 代码臭味
+cleanup: v. 清理
+
+rustc:
+rustc main.rs
+rustc --emit <llvm-ir|asm> main.rs
+rustc -C opt-level=3 -C lto=fat main.rs
+
+panic = search(metadata) + cleanup
+*/
+mod calc {
+    pub fn add<T: std::ops::Add<Output = T>>(a: T, b: T) -> T {
+        a + b
+    }
+}
+
+// struct member reorder
+// _a 1b _c _b = 8
+struct A {
+    _a: u8,
+    _b: u32,
+    _c: u16,
+}
+
+fn main() {
+    let a = 3;
+    let b = 4;
+    let c = calc::add(a, b);
+    println!("{}", c);
+    println!("{}", std::mem::size_of::<A>());
+    // let x: i32;
+    // if true {
+    //     x = 1;
+    // } else {
+    //     x = 2;
+    // }
+    // println!("{}", x);
+    let mut x = 3;
+    let rx = &mut x;
+    let px = rx as *mut i32;
+    unsafe {
+        *px = 5; // raw pointer
+    }
+    println!("{}", x);
+    // smart pointer
+    // Deref trait: dereference
+    // Drop trait: destruction
+}

@@ -1,0 +1,62 @@
+#[derive(Debug)]
+struct S(i32);
+
+// explicitly construct
+// implicitly destruct
+// SBRM = Scope-Bound Resource Management(作用域界定的资源管理)
+// drop-flag
+// enum struct/tuple <=> tagged union = tag + union
+// sizeof(Box<T>) = usize(*T)
+impl Drop for S {
+    fn drop(&mut self) {
+        println!("drop {}", self.0);
+    }
+}
+
+fn main() {
+    // let x = S(1);
+    // println!("crate x: {:?}", x);
+    // {
+    //     let y = S(2);
+    //     println!("crate y: {:?}", y);
+    //     println!("exit inner scope");
+    // }
+    // println!("exit main");
+    let x = S(1);
+    println!("crate x: {:?}", x);
+    let x = S(2);
+    println!("crate x: {:?}", x);
+    let _v = vec![1, 2, 3];
+    {
+        _v
+    };
+    // v.push(4);
+    // smart pointer
+    #[derive(Debug)]
+    struct Pt<T>(T, T);
+    let ppt = Box::new(Pt::<f32>(3.3, 4.4)); // like C++::unique_ptr, = <=> move, has clone()
+    println!("{:?}", ppt);
+    use std::rc::Rc; // rc = reference counting
+    let ppt2 = Rc::new(Pt::<u32>(3, 4)); // like C++::shared_ptr, = <=> move, has clone()
+    let _ppt3 = ppt2.clone();
+    println!("{:#?}", ppt2);
+    println!("{}", std::mem::size_of::<Rc<Pt<f64>>>());
+    /*
+    ppt2:
+        [ptr] ->
+    _ppt3:
+        [ptr] -> [ptr2:*T] -> [T]
+                 [rc]
+    atomic +/- shared [rc]
+    ppt2 == _ppt3(all memory)
+    */
+}
+
+/*
+memory safe:
+1. int* p = (int*)(<random-addr>); *p = <val>;
+2. int* p = nullptr; *p = <val>;
+3. free(p); *p = <val>; # dangling pointer
+4. int a[10]; a[10]; # buffer overflow
+5. free(p); free(p); # double free || int* p = (int*)(<random-addr>); free(p);
+*/
