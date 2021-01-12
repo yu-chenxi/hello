@@ -1,0 +1,23 @@
+static mut NUM: i32 = 0;
+
+fn main() {
+    const N: u32 = 10;
+    let inc = || {
+        for _i in 0..N {
+            unsafe {
+                let mut t = NUM;
+                println!("NUM = {}", t);
+                t += 1;
+                NUM = t;
+            }
+        }
+    };
+    use std::thread;
+    let t = thread::spawn(inc);
+    inc();
+    t.join().unwrap();
+    let mut v: [u32; 4] = [3, 5, 9, 6];
+    let rv1 = &mut v[1];
+    *rv1 *= 2;
+    println!("{:?}", v);
+}

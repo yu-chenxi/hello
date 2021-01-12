@@ -1,3 +1,5 @@
 /target
-src/prime.txt
+src/prime.txt.zst
 .vscode/
+.cargo/
+hello.wasm

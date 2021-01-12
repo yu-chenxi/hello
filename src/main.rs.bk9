@@ -1,0 +1,82 @@
+// use std::fs::write;
+
+// // wasm vm: 1. wasmer 2. wasmtime
+// fn main() {
+//     // println!("hello wasi!");
+//     // wasmer run hello.wasm --mapdir ./:`pwd`
+//     write("./foo.txt", "hello rust!\n").unwrap();
+// }
+fn temp() -> i32 {
+    1
+}
+
+// CTFE = compilation time function execution
+// `for` is not allowed in a `const fn`
+const fn init_len(n: usize) -> usize {
+    if n % 2 == 1 {
+        let t = n + 1;
+        t / 2
+    } else {
+        n / 2
+    }
+}
+
+fn retc() -> impl Fn(i32) -> i32 {
+    let i = 3;
+    move |j| j * i
+}
+
+// ..=
+fn score_level(s: u32) -> char {
+    match s {
+        100 => 'S',
+        n @ 90..=99 => {
+            println!("t = {}", n);
+            'A'
+        }
+        _ => 'E',
+    }
+}
+
+fn main() {
+    let rr = &temp(); // rr -> [1]
+    println!("{:p}", rr);
+    println!("{}", *rr);
+    let v = [3; init_len(3)];
+    println!("{:?}", v);
+    println!("{}", retc()(3));
+    println!("{}", score_level(100));
+    println!("{}", score_level(95));
+    println!("{}", score_level(10));
+    assert_eq!(true as i32, 1);
+    assert_eq!(false as i32, 0);
+    // assert_eq!(1 as bool, true);
+    println!("{:?}", std::f32::MAX);
+    // println!("{}", v[2]);
+    println!("{:?}", (1..=5)); // rang type
+    let _s1: &'static str = "hello rust!";
+    let out = 42;
+    let out2 = 54;
+    let c1 = |i: i32, j: i32| i + j + out;
+    println!("{}, {:?}", c1(1, 2), ());
+    let c2 = |i: i32, j: i32| i + j + out + out2;
+    println!("{}", std::mem::size_of_val(&c1)); // ptr
+    println!("{}", std::mem::size_of_val(&c2)); // ptr*2 => usize*2
+                                                // fn ptr + var ptrs
+    fn mov_coords(x: (f32, f32)) -> (f32, f32) {
+        (x.0 + 1.0, x.1 + 2.0)
+    }
+    let x = (1.0, 2.0);
+    println!("{:?}", mov_coords(x));
+    type Pt = (i32, i32); // tuple, auto impl Debug trait
+    let p: Pt = (1, 2);
+    println!("{:?}", p);
+}
+
+// mutable/immutable bind
+// match is expression block
+// closure = trait + struct
+// u8 -> byte
+// array(len is const) -> Vec
+// &str -> String
+// ref is not nil
