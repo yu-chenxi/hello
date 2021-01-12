@@ -1,0 +1,36 @@
+#[allow(dead_code)]
+fn prime(n: u32) -> bool {
+    let r = n % 6;
+    if n >= 6 && r != 1 && r != 5 {
+        return false;
+    }
+
+    let m = (n as f64).sqrt() as u32;
+    for i in 2..=m {
+        if n % i == 0 {
+            return false;
+        }
+    }
+    true
+}
+
+#[test]
+fn test_prime() {
+    assert_eq!(prime(2), true);
+    assert_eq!(prime(19), true);
+    assert_eq!(prime(65537), true);
+    assert_eq!(prime(3), true);
+    assert_eq!(prime(15), false);
+    assert_eq!(prime(32767), false);
+}
+
+use std::rc::Rc;
+
+fn main() {
+    // println!("hello rust!");
+    let x = 5;
+    let rx = Rc::new(x);
+    let rx2 = rx.clone();
+    assert_eq!(Rc::strong_count(&rx), 2);
+    assert!(Rc::strong_count(&rx2) == 2);
+}

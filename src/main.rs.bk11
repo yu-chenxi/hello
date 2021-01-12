@@ -1,0 +1,138 @@
+use std::ops::Add;
+
+#[allow(dead_code)]
+fn my_add<T: Add<Output = T>>(a: T, b: T) -> T {
+    a + b
+}
+
+#[allow(dead_code)]
+fn prime(n: u32) -> bool {
+    let r = n % 6;
+    if n >= 6 && (r != 1 && r != 5) {
+        return false;
+    }
+
+    let m = (n as f64).sqrt() as u32;
+    for i in 2..=m {
+        if n % i == 0 {
+            return false;
+        }
+    }
+    true
+}
+
+#[test]
+fn test_my_add() {
+    assert_eq!(my_add(1, 2), 3);
+    assert_eq!(my_add(10, -6), 4);
+    // assert_eq!(my_add(10, -6), 3);
+    // assert!(false);
+}
+
+#[test]
+fn test_prime() {
+    assert_eq!(prime(2), true);
+    assert_eq!(prime(19), true);
+    assert_eq!(prime(96), false);
+}
+
+fn main() {
+    // dangling ref
+    // r lifetime 'a
+    let r;
+    {
+        // x lifetime 'b
+        let x = 5;
+        r = &x; // `x` does not live long enough
+        println!("x = {}", r);
+    } // 'b
+      // println!("x = {}", r);
+      // 'a
+      // ref lifetime > *ref lifetime => borrow checker failed!
+    let mut x = 5;
+    let rx = &mut x;
+    println!("{}", rx);
+    println!("{:p}", rx);
+    *rx += 2;
+    println!("{}", x);
+    let mut px = Box::new(x);
+    println!("{}", px);
+    println!("{:p}", px);
+    *px += 3;
+    println!("{}", px);
+    use std::rc::Rc;
+    let rx = Rc::new(x); // Rc only for single thread
+    let rx2 = rx.clone();
+    println!("{}", Rc::strong_count(&rx));
+    println!("{}", Rc::strong_count(&rx2));
+    println!("{:p} {:p}", rx.as_ref(), rx2.as_ref());
+    let mut pl = Vec::new();
+    pl.push(Box::new(Pt(1.0, -2.0)));
+    pl.push(Box::new(Pt(2.5, 3.0)));
+    pl.push(Box::new(Pt(0.0, 4.3)));
+    println!("{:?}", pl);
+    let name;
+    // {
+    let s = "mike".to_string();
+    name = &s;
+    // }
+    let p = Person {
+        name: name,
+        age: 20,
+    };
+    println!("{:?}", p);
+    let f1 = File::new("./foo.txt");
+    f1.open();
+    let f2 = File::new("./bar.txt");
+    f2.open();
+    drop(f1);
+    wc();
+}
+
+// sort
+// sort_unstale
+// reverse
+// lines(iterator)
+fn wc() {
+    let s: String = "Time flies very fast.\nHello Rust!".to_string();
+    // println!("{}", s);
+    for l in s.lines() {
+        println!("=> {}", l);
+    }
+    let mut v: [i32; 5] = [-10, 2, 0, -250, 169];
+    v.sort_unstable();
+    println!("v = {:?}", v);
+    v.reverse();
+    println!("v = {:?}", v);
+}
+
+struct File {
+    path: String,
+}
+
+impl Drop for File {
+    fn drop(&mut self) {
+        println!("close file <{}>", self.path);
+    }
+}
+
+impl File {
+    fn new(path: &str) -> Self {
+        File {
+            path: path.to_string(),
+        }
+    }
+
+    fn open(&self) {
+        println!("open file <{}>", self.path);
+    }
+}
+
+#[derive(Debug)]
+struct Person<'a> {
+    name: &'a str, // *name lifetime > Person lifetime
+    age: u32,
+}
+
+#[derive(Debug)]
+struct Pt(f64, f64);
