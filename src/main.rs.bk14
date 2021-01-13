@@ -1,0 +1,21 @@
+mod anim;
+use anim::dog;
+
+fn main() {
+    anim::what();
+    dog::what();
+    // iterator
+    let v = [1, 2, 3];
+    let mut it = v.iter();
+    assert_eq!(it.next(), Some(&1));
+    assert_eq!(it.next(), Some(&2));
+    assert_eq!(it.next(), Some(&3));
+    assert_eq!(it.next(), None);
+    it = v.iter();
+    let s: i32 = it.sum();
+    println!("{}", s);
+    let v2: Vec<i32> = v.iter().map(|x| x * x).collect(); // iter + map
+    println!("{:?}", v2);
+    let v3: Vec<i32> = v2.into_iter().filter(|x| *x != 4).collect(); // into_iter + filter
+    println!("{:?}", v3);
+}
