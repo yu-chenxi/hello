@@ -1,0 +1,197 @@
+#[derive(Debug, PartialEq)]
+struct Shoe {
+    size: u32,
+    style: String,
+}
+
+#[allow(dead_code)]
+fn shoes_in_my_size(shoes: Vec<Shoe>, shoe_size: u32) -> Vec<Shoe> {
+    shoes.into_iter().filter(|s| s.size == shoe_size).collect()
+}
+
+#[test]
+fn filter_by_size() {
+    let shoes = vec![
+        Shoe {
+            size: 10,
+            style: String::from("sneaker"),
+        },
+        Shoe {
+            size: 13,
+            style: String::from("sandal"),
+        },
+        Shoe {
+            size: 10,
+            style: String::from("boot"),
+        },
+    ];
+    let in_my_size = shoes_in_my_size(shoes, 10);
+    assert_eq!(
+        in_my_size,
+        vec![
+            Shoe {
+                size: 10,
+                style: String::from("sneaker")
+            },
+            Shoe {
+                size: 10,
+                style: String::from("boot")
+            },
+        ]
+    )
+}
+
+/// # example
+///
+/// ```
+/// let x = 2;
+/// assert_eq!(hello::add_two(x), 4);
+/// ```
+#[allow(dead_code)]
+fn add_two(x: i32) -> i32 {
+    x + 2
+}
+
+// use std::cell::RefCell;
+
+// enum Message {
+//     Quit,
+//     Move { x: i32, y: i32 },
+//     Write(String),
+//     ChangeColor(u8, u8, u8),
+// }
+
+// impl Message {
+//     fn call(&self) {
+//         match self {
+//             Message::Quit => println!("quit!"),
+//             Message::Move { x, y } => println!("x = {}, y = {}", x, y),
+//             Message::Write(s) => println!("{}", s),
+//             Message::ChangeColor(r, g, b) => println!("{} {} {}", r, g, b),
+//         };
+//     }
+// }
+
+fn main() {
+    // let x = 5;
+    // let rx = RefCell::new(x);
+    // let _rwx = rx.borrow_mut();
+    // let _rwx2 = rx.borrow_mut(); // already borrowed: BorrowMutError(double mutable ref)
+    // runtime borrow check
+
+    // let m = Message::Move { x: 2, y: 3 };
+    // m.call();
+    // let i = Some(8);
+    // () unit value
+    // let i: Option<i32> = None;
+    // let s = i.unwrap() + 3;
+    // println!("{:?} {}", i, s);
+    // let mut v = vec![2, 5, 11, 17, 23];
+    // for x in &mut v {
+    //     *x += 1;
+    // }
+    // v.pop();
+    // println!("{:?}", v);
+    // let s = String::from("你好, 世界!"); // 4x3 + 3
+    // println!("{}", s.len());
+    // for c in s.chars() {
+    //     println!("{}", c); // Display -> .to_string
+    // }
+
+    // for b in s.bytes() {
+    //     // Vec<u8>
+    //     println!("{}", b);
+    // }
+
+    // let s2 = String::from("\nhello rust!");
+    // let s3 = s + &s2;
+    // println!("{}", s3);
+    eat_at_restaurant();
+    use std::collections::HashMap;
+    // let teams = [String::from("blue"), String::from("red")];
+    // let init_scores = [10, 50];
+    // let mut scores: HashMap<_, _> = teams.iter().zip(init_scores.iter()).collect();
+    // println!("{:?}", scores);
+    // let blue = String::from("blue");
+    // scores.insert(&blue, &25);
+    // for (k, v) in &scores {
+    //     println!("{} -> {}", k, v);
+    // }
+    // let mut m = HashMap::new();
+    // m.insert("blue", 10);
+    // m.insert("red", 50);
+    // m.entry("blue").or_insert(20);
+    // m.insert("red", 100);
+    // println!("{:?}", m);
+    // let text = "hello world wonderful world";
+    // let mut map = HashMap::new();
+    // for word in text.split_whitespace() {
+    //     let cnt = map.entry(word).or_insert(0); // word not exits -> insert word -> 0
+    //     *cnt += 1;
+    // }
+    // println!("{:#?}", map);
+    let v = vec![1.5, -4.2, 105.8, 0.2, -32.7];
+    fn mean(v: &Vec<f64>) -> f64 {
+        // let s: f64 = v.iter().sum();
+        // s / v.len() as f64
+        let mut s = 0.0;
+        for e in v {
+            s += e;
+        }
+        s / v.len() as f64
+    }
+    println!("{}", mean(&v));
+    let v = vec![-10, 9, 2, 0, -2, 2, 21];
+    fn middle(v: &Vec<i32>) -> f64 {
+        let n = v.len();
+        let mut t = v.clone();
+        t.sort();
+        if n % 2 == 1 {
+            t[n / 2] as f64
+        } else {
+            (t[n / 2 - 1] + t[n / 2]) as f64 / 2.0
+        }
+    }
+    println!("{}", middle(&v));
+    fn mode(v: &Vec<i32>) -> i32 {
+        let mut m = HashMap::new();
+        for e in v {
+            let cnt = m.entry(*e).or_insert(0);
+            *cnt += 1;
+        }
+
+        let mut mode = 0;
+        let mut cnt = 0;
+
+        for (k, v) in m {
+            if v > cnt {
+                cnt = v;
+                mode = k;
+            }
+        }
+
+        mode
+    }
+    println!("{}", mode(&v));
+}
+
+/*
+cargo new hello
+1. hello is package
+2. hello/src/main.rs is crate root
+3. package name = crate name = hello
+*/
+
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+use front_of_house::hosting as host; // shorten the path
+
+fn eat_at_restaurant() {
+    front_of_house::hosting::add_to_waitlist();
+    crate::front_of_house::hosting::add_to_waitlist(); // slibing
+    host::add_to_waitlist();
+}
