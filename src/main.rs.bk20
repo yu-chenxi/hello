@@ -1,0 +1,96 @@
+use std::io::{Read, Write};
+use std::sync::Arc;
+use std::sync::Mutex;
+use std::thread;
+use std::{cell::RefCell, rc::Rc};
+use std::{io::Error, net::TcpListener, sync::mpsc};
+
+#[derive(Debug)]
+enum Type {
+    Color(u8, u8, u8),
+    Point { x: f64, y: f64 },
+}
+
+fn main() {
+    // print format
+    let x = 15;
+    let rx = &x;
+    println!("{}", rx);
+    println!("{:p}", rx);
+    println!("{:b}", rx);
+    println!("{:o}", rx);
+    let y = 1.0 / 3.0;
+    println!("{:.6}", y);
+    let t = (1.0, -2.5);
+    println!("{:?}", t);
+    let red = Type::Color(0xffu8, 0, 0);
+    let origin = Type::Point { x: 0.0, y: 0.0 };
+    println!("{:?}", red);
+    println!("{:?}", origin);
+    let s = "你好, 世界!";
+    let len = s.len();
+    println!("{}", len);
+    println!("{:?}", s.chars());
+    println!("{:?}", s.as_bytes());
+    let mut v = [1, 2, 3];
+    for e in &mut v {
+        *e *= *e;
+    }
+    println!("{:?}", v);
+    // let mut cnt = 1;
+    // const N: u32 = 10;
+    let (tx, rx) = mpsc::channel();
+    let _t = thread::spawn(move || {
+        // for _ in 0..N {
+        //     cnt += 1; // out cnt copy
+        // }
+        // println!("cnt = {}", cnt);
+        let msg = "hi".to_string();
+        tx.send(msg).unwrap();
+    });
+    let msg = rx.recv().unwrap();
+    println!("msg = {}", msg);
+    // t.join().unwrap();
+    // println!("cnt = {}", cnt);
+    let cnt = Arc::new(Mutex::new(0));
+    let _cnt = Arc::clone(&cnt);
+    let t = thread::spawn(move || {
+        let mut n = _cnt.lock().unwrap();
+        *n += 1;
+    });
+    t.join().unwrap();
+    println!("cnt = {}", *cnt.lock().unwrap());
+    let x = Rc::new(5);
+    let _s1 = Rc::clone(&x);
+    let _s2 = Rc::clone(&x);
+    println!("{}", Rc::strong_count(&x));
+    let _w1 = Rc::downgrade(&x);
+    let _w2 = Rc::downgrade(&x);
+    println!("{}", Rc::weak_count(&x));
+    let x = RefCell::new(5);
+    {
+        let mut rx1 = x.borrow_mut();
+        *rx1 = 3;
+    }
+    let rx2 = x.borrow();
+    println!("{}", rx2);
+    echo().unwrap();
+}
+
+fn echo() -> Result<(), Error> {
+    let addr = "127.0.0.1:8000";
+    let listener = TcpListener::bind(addr)?;
+    for stream in listener.incoming() {
+        let mut stream = stream?;
+        thread::spawn(move || -> Result<(), Error> {
+            loop {
+                const SIZE: usize = 64;
+                let mut buf = [0; SIZE];
+                let len = stream.read(&mut buf)?;
+                stream.write(&buf[..len])?;
+            }
+            // Ok(())
+        });
+    }
+    Ok(())
+}

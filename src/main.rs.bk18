@@ -1,0 +1,76 @@
+use std::cell::{Cell, RefCell};
+use std::rc::Rc;
+
+fn my_sum(v: &[i32]) -> i32 {
+    let mut s = 0;
+    for e in v {
+        s += e;
+    }
+    s
+}
+
+use std::any::{Any, TypeId};
+
+fn main() {
+    println!("{:?}", TypeId::of::<i32>());
+    let x: &dyn Any;
+    let y = true;
+    x = &y;
+    println!("{}", x.is::<bool>());
+    let v = [2, 5, 11, 17, 23];
+    my_sum(&v);
+    let v = vec![1, 4, 9];
+    my_sum(&v);
+    let v2: Vec<i32> = v.iter().map(|x| x * 2).collect();
+    // println!("{:?}", v2);
+    assert_eq!(vec![2, 8, 18], v2, "what's problem?");
+
+    let first = Rc::new(RefCell::new(Node {
+        data: 1,
+        next: None,
+    }));
+    let second = Rc::new(RefCell::new(Node {
+        data: 2,
+        next: None,
+    }));
+    let _third = Rc::clone(&second);
+    first.borrow_mut().next = Some(Rc::clone(&second));
+    let x = Rc::new(45);
+    let _y1 = x.clone();
+    let _y2 = x.clone();
+    println!("{:?}", Rc::strong_count(&x));
+    let _w = Rc::downgrade(&x); // no owership
+    let _w2 = Rc::downgrade(&x); // no owership
+    println!("{:?}", Rc::weak_count(&x));
+    let _y3 = &*x;
+    println!("{}", 100 - *x);
+    let foo = Foo {
+        x: 1,
+        y: Cell::new(3),
+    };
+    assert_eq!(3, foo.y.get());
+    foo.y.set(5);
+    println!("foo = {:?}", foo);
+    let x = vec![1, 2, 3, 4];
+    let x = RefCell::new(x);
+    println!("{:?}", x.borrow());
+    x.borrow_mut().push(5);
+    println!("{:?}", x.borrow());
+}
+#[derive(Debug)]
+struct Foo {
+    x: u32,
+    y: Cell<u32>,
+}
+// Option<Rc<RefCell<Node<T>>>>
+type NodePtr = Option<Rc<RefCell<Node>>>;
+struct Node {
+    data: i32,
+    next: NodePtr,
+}
+
+impl Drop for Node {
+    fn drop(&mut self) {
+        println!("{} dropping!", self.data);
+    }
+}

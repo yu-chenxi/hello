@@ -1,0 +1,50 @@
+use std::net::{Ipv4Addr, SocketAddrV4, TcpListener, TcpStream};
+use std::sync::atomic;
+use std::thread;
+use std::{
+    io::Error,
+    io::{Read, Write},
+};
+
+struct Counter {
+    count: atomic::AtomicU32,
+}
+
+impl Counter {
+    const fn new() -> Counter {
+        Counter {
+            count: atomic::AtomicU32::new(0),
+        }
+    }
+
+    fn inc(&self) {
+        self.count.fetch_add(1, atomic::Ordering::Relaxed);
+    }
+}
+
+static COUNT: Counter = Counter::new();
+
+// echo service
+fn handle_client(mut stream: TcpStream) -> Result<(), Error> {
+    const SIZE: usize = 64;
+    COUNT.inc();
+    // println!("connected from {:?}", stream.local_addr()?);
+    let mut buf = [0; SIZE];
+    loop {
+        let len = stream.read(&mut buf)?;
+        stream.write(&buf[..len])?;
+    }
+    // stream.shutdown(std::net::Shutdown::Both)?;
+    // Ok(())
+}
+
+fn main() -> Result<(), Error> {
+    const PORT: u16 = 8000;
+    let socket = SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), PORT);
+    let listener = TcpListener::bind(socket)?;
+    for stream in listener.incoming() {
+        let stream = stream?;
+        thread::spawn(move || handle_client(stream));
+    }
+    Ok(())
+}
