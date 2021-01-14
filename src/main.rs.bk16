@@ -1,0 +1,50 @@
+#[derive(Copy, Clone)]
+struct Counter {
+    count: u32,
+}
+
+impl Counter {
+    fn new() -> Counter {
+        Counter { count: 0 }
+    }
+}
+
+impl Iterator for Counter {
+    type Item = u32;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.count += 1;
+        if self.count < 6 {
+            Some(self.count)
+        } else {
+            None
+        }
+    }
+}
+
+fn main() {
+    // panic!("Crash and burn");
+    let v = vec![1, 2, 3];
+    // v[99];
+    let s: i32 = v.iter().sum(); // consuming adaptor
+    println!("{}", s);
+    // iterator adaptor
+    let v2: Vec<i32> = v.iter().map(|x| x + 1).collect();
+    println!("{:?}", v2);
+    let v3: Vec<i32> = v2.into_iter().filter(|x| x % 2 == 0).collect();
+    println!("{:?}", v3);
+    let cnt = Counter::new();
+    for x in cnt {
+        println!("{}", x);
+    }
+    println!("{}", cnt.count);
+    let mut cnt2 = cnt;
+    loop {
+        match cnt2.next() {
+            Some(x) => println!("{}", x),
+            None => break,
+        }
+    }
+    println!("{}", cnt.count);
+    let v4: Vec<i32> = v.iter().zip(v.iter()).map(|(x, y)| x * y).collect();
+    println!("{:?}", v4);
+}
