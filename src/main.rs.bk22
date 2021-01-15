@@ -1,0 +1,71 @@
+use std::borrow::Cow;
+use std::cell::{Cell, RefCell};
+
+#[derive(Debug)]
+struct Foo<'a> {
+    part: &'a str, // path does not have owership
+}
+
+impl<'a> Foo<'a> {
+    #[allow(dead_code)]
+    fn new(s: &'a str) -> Foo {
+        Foo { part: s }
+    }
+
+    #[allow(dead_code)]
+    fn split_first(s: &'a str) -> &'a str {
+        // s' lifetime > return's lifetime
+        s.split(",").next().expect("Could not find a ','")
+    }
+}
+
+#[derive(Debug)]
+struct Foo2 {
+    x: u32,
+    y: u32,
+}
+
+fn foo2() {
+    let f2 = Foo2 { x: 1, y: 2 };
+    // f2.y = 3;
+    println!("{:?}", f2);
+}
+
+#[derive(Debug)]
+struct Foo3 {
+    x: u32,
+    y: Cell<u32>, // T:Copy trait
+}
+
+fn foo3() {
+    let f3 = Foo3 {
+        x: 1,
+        y: Cell::new(2),
+    };
+    f3.y.set(3); // unsafe change
+    println!("{:?}", f3);
+}
+
+fn main() {
+    let words = String::from("Sometimes think, the greatest sorrow than older");
+    let first = words.split(',').next().expect("Could not find a ','");
+    let f = Foo { part: first }; // f.part's lifetime > f's lifetime
+    println!("{:?}", f);
+    let s1 = Box::new("hello".to_string());
+    let s2 = *s1; // deref -> transfer owership
+    println!("{}", s2);
+    foo2();
+    foo3();
+    let v = vec![1, 2, 3];
+    // v[0] = 3;
+    let vc = RefCell::new(v); // moved
+    {
+        let mut rc = vc.borrow_mut();
+        rc[0] = 3; // rc is dropped
+    }
+    println!("{:?}", vc.borrow());
+    let mut v = Cow::from(vec![1, 2, 3]);
+    v.to_mut()[1] = 4; // copy once
+    v.to_mut()[0] = 5;
+    println!("{:?}", v);
+}

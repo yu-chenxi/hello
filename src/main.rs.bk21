@@ -1,0 +1,115 @@
+// fn f(mut s: String) -> String {
+//     s.push_str("world!");
+//     s
+// }
+
+// fn main() {
+//     let mut s = String::from("hello ");
+//     s = f(s);
+//     println!("s = {}", s);
+// }
+#[derive(Debug, Clone, Copy)]
+struct S {
+    x: i32,
+    y: i32,
+}
+
+fn main() {
+    let x = S { x: 1, y: 2 };
+    let _y = x;
+    println!("{:?}", x);
+    let a = ("a".to_string(), "b".to_string());
+    let b = a;
+    println!("{:?}", b);
+    // println!("{:?} {:?}", a, b);
+    let c = (1, 2, 3);
+    let d = c;
+    println!("{:?} {:?}", c, d);
+    // let a = "hello".to_string();
+    // a += " world"; // cannot borrow `a` as mutable, as it is not declared as mutable
+    // 无法将a借为可用(String -> &mut String), 因为它没有声明为可变
+    // quick fix快捷键: ctrl + .
+    // let outer_val = 1;
+    // let outer_sp = "hello".to_string();
+    // {
+    //     let inner_val = 2;
+    //     outer_val;
+    //     outer_sp; // moved
+    // }
+    // println!("{}", outer_val);
+    // println!("{:?}", outer_sp);
+    // println!("{}", inner_val);
+    let v = vec![1, 2, 3];
+    for i in &v {
+        // moved
+        println!("{}", i);
+        // println!("{:?}", v);
+    }
+    println!("{:?}", v);
+    let a = Some("hello".to_string());
+    if let Some(s) = a {
+        // partial move
+        // a -> s
+        println!("{:?}", s);
+        // drop(s)
+    }
+    // println!("{:?}", a);
+    let s = "hello".to_string();
+    let join = |i| s + i;
+    assert_eq!("hello world", join(" world")); // closure join moved
+                                               // assert_eq!("hello world", join(" world"));
+                                               // println!("{:?}", s);
+    let mut v = [1, 2, 3];
+    foo(&mut v);
+    assert_eq!([3, 2, 3], v);
+    let i = 20;
+    let mut o = 0;
+    compute(&i, &mut o); // o = 2
+                         // let x = "hello".to_string();
+                         // join(&x);
+    let s1 = String::from("Rust");
+    let s1_r = &s1;
+    {
+        let s2 = String::from("C");
+        /*
+        s1_r: main scope
+        s2: inner scope
+        res: inner scope < s2
+        */
+        let res = longer(s1_r, &s2);
+        println!("{} is longer", res);
+    }
+}
+
+fn longer<'a>(s1: &'a str, s2: &'a str) -> &'a str {
+    if s1.len() > s2.len() {
+        s1
+    } else {
+        s2
+    }
+}
+
+// fn join(s: &String) -> String {
+//     let append = *s;
+//     // 解引用会获得所有权
+//     // cannot move out of `*s` which is behind a shared reference
+
+//     "Hello".to_string() + &append
+// }
+
+fn compute(input: &i32, output: &mut i32) {
+    if *input > 10 {
+        *output = 1;
+    }
+
+    if *input > 5 {
+        *output *= 2;
+    }
+}
+
+use std::mem;
+fn foo(v: &mut [i32; 3]) {
+    // v = {ptr}
+    println!("{}", mem::size_of_val(&v));
+    v[0] = 3;
+}
