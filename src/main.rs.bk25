@@ -1,0 +1,94 @@
+use std::panic;
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::thread::current;
+use std::thread::Builder;
+use std::time::Duration;
+
+#[derive(Debug)]
+struct Color(u8, u8, u8);
+
+fn main2() {
+    let green = Color(0, 0xffu8, 0);
+    println!("{:?}", green);
+    foo(green);
+}
+
+fn foo(c: Color) -> u8 {
+    if c.1 != 0 {
+        c.1 // return u8
+    } else {
+        panic!("hello!");
+    }
+}
+
+fn main3() {
+    let mut v = vec![];
+    for id in 0..5 {
+        let thread_name = format!("child-{}", id);
+        let size: usize = 64;
+        let builder = Builder::new().name(thread_name).stack_size(size);
+        let child = builder
+            .spawn(move || {
+                println!("in child: {}", id);
+                if id == 3 {
+                    // panic::catch_unwind(|| {
+                    //     panic!("oh no!");
+                    // })
+                    // .unwrap();
+                    println!("in {} do sm", current().name().unwrap());
+                }
+            })
+            .unwrap();
+        v.push(child);
+    }
+    for child in v {
+        child.join().unwrap();
+    }
+}
+
+fn main4() {
+    let child = thread::spawn(|| {
+        println!("Parking thread"); // 1
+        thread::park(); //2, 对calling thread进行暂停操作
+        println!("Uparked thread"); //5
+    });
+    thread::sleep(Duration::from_millis(10));
+    println!("Unpark thread"); //3
+    child.thread().unpark(); //4
+    child.join().unwrap();
+}
+
+fn main5() {
+    let mutex = Arc::new(Mutex::new(1));
+    let c_mutex = mutex.clone();
+    let child = thread::spawn(move || {
+        let mut data = c_mutex.lock().unwrap();
+        *data += 1;
+        panic!("oh no");
+    });
+    // 中毒(poison): 线程在获得锁之后发生panic
+    println!("is poistioned: {}", mutex.is_poisoned());
+    child.join().unwrap(); // 子线程发生panic, 则join的返回值为Result::Err, unwrap会将子线程的panic传递给父线程
+}
+
+fn main() {
+    main5();
+    main4();
+    main3();
+    main2();
+    let mut v = vec![];
+    for id in 0..5 {
+        let child = thread::spawn(move || {
+            // move: transfer owership
+            println!("in child: {}", id);
+        });
+        v.push(child);
+    }
+
+    println!("in main: join before");
+    for child in v {
+        child.join().unwrap();
+    }
+    println!("in main: join after");
+}
