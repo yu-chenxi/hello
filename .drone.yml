@@ -6,6 +6,6 @@ steps:
   image: rust
   commands:
   - cargo build
-  - time cargo run -q
+  - cargo run -q
   - cargo build --release
-  - time cargo run --release -q
+  - cargo run --release -q
