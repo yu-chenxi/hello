@@ -1,0 +1,9 @@
+kind: pipeline
+name: default
+
+steps:
+- name: run
+  image: rust
+  commands:
+  - cargo build
+  - cargo run
