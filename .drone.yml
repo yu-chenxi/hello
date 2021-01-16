@@ -4,8 +4,15 @@ name: default
 steps:
 - name: run
   image: rust
+    volumes:
+  - name: vendor
+    path: /drone/src/vendor/
   commands:
+  - cargo vendor
   - cargo build
-  - cargo run -q
-  - cargo build --release
-  - cargo run --release -q
+  - cargo run
+
+volumes:
+  - name: vendor
+    host:
+      path: /root/vendor/
