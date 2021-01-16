@@ -56,3 +56,4 @@ let y = x;
 // weak<T>保留对Rc<T>中值的引用
 // std::cell{Cell,RefCell}实现内部可变性
 // NLL(non-lexxcal lifetime): 非词法作用域生命周期
+// 装箱: 将值托管到堆内存

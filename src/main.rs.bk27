@@ -1,0 +1,62 @@
+use std::ops::Add;
+
+#[derive(Debug)]
+struct Pt {
+    x: i32,
+    y: i32,
+}
+
+// default: RHS = Self
+impl Add for Pt {
+    type Output = Pt; // associative type
+
+    fn add(self, rhs: Self) -> Self::Output {
+        // todo!()
+        Pt {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl Add<(i32, i32)> for Pt {
+    type Output = Pt;
+
+    fn add(self, rhs: (i32, i32)) -> Self::Output {
+        // todo!()
+        Pt {
+            x: self.x + rhs.0,
+            y: self.y + rhs.1,
+        }
+    }
+}
+
+struct Pt2(i32, i32);
+trait MyAdd<RHS = Self> {
+    type Output;
+    fn my_add(self, rhs: RHS) -> Self::Output;
+}
+
+impl MyAdd<Pt2> for Pt {
+    type Output = Pt;
+
+    fn my_add(self, rhs: Pt2) -> Self::Output {
+        // todo!()
+        Pt {
+            x: self.x + rhs.0,
+            y: self.y + rhs.1,
+        }
+    }
+}
+
+fn main() {
+    let pt1 = Pt { x: 1, y: 2 };
+    let pt2 = Pt { x: 3, y: 4 };
+    let pt3 = pt1 + pt2;
+    println!("{:?}", pt3);
+    let pt4 = pt3 + (5, 6);
+    println!("{:?}", pt4);
+    let pt21 = Pt2(7, 8);
+    let pt5 = pt4.my_add(pt21);
+    println!("{:?}", pt5);
+}

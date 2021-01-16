@@ -1,0 +1,60 @@
+#![feature(generators, generator_trait)]
+use std::ops::Generator;
+use std::sync::Arc;
+use std::sync::Barrier;
+use std::sync::RwLock;
+use std::thread;
+
+fn foo() {
+    let mut gen = || {
+        yield 1;
+        yield 2;
+        yield 3;
+        return 4;
+    };
+    unsafe {
+        for _ in 0..4 {
+            let c = gen.resume();
+            println!("{:?}", c);
+        }
+    }
+}
+
+fn main2() {
+    let mut handles = Vec::with_capacity(5);
+    let barrier = Arc::new(Barrier::new(5));
+    for _ in 0..5 {
+        let c = barrier.clone();
+        let handle = thread::spawn(move || {
+            println!("before wait");
+            c.wait(); // like golang sync.WaitGroup
+            println!("after wait");
+        });
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+}
+
+fn main() {
+    foo();
+    main2();
+    // TODO
+    let lock = RwLock::new(5);
+    {
+        let r1 = lock.read().unwrap();
+        let r2 = lock.read().unwrap();
+        assert_eq!(5, *r1);
+        assert_eq!(5, *r2);
+    }
+
+    {
+        // let _r1 = lock.read().unwrap();
+        let mut w = lock.write().unwrap();
+        *w += 1;
+        assert_eq!(6, *w);
+        // let mut _w2 = lock.write().unwrap(); // double-lock， non-recursive lock
+    }
+}

@@ -1,0 +1,102 @@
+use std::{fmt::Debug, ops::Add};
+
+// RHS = T
+// fn sum<T: Add<Output = T>>(x: T, y: T) -> T {
+//     x + y
+// }
+fn sum<T>(x: T, y: T) -> T
+where
+    T: Add<Output = T>,
+{
+    x + y
+}
+
+#[derive(Debug)]
+struct Foo;
+trait Bar {
+    fn baz(&self);
+}
+
+impl Bar for Foo {
+    fn baz(&self) {
+        // todo!()
+        println!("{:?}", self);
+    }
+}
+
+fn static_dispatch<T>(t: &T)
+where
+    T: Bar,
+{
+    t.baz()
+}
+
+fn dynamic_dispatch(t: &dyn Bar) {
+    t.baz();
+}
+
+fn main() {
+    let s = sum(1, 2);
+    println!("{}", s);
+    let s = sum(3.3, 4.4);
+    println!("{}", s);
+    let foo = Foo;
+    static_dispatch(&foo);
+    dynamic_dispatch(&foo);
+    foo2();
+    assert_eq!(true, prime(65537));
+}
+
+fn foo2() {
+    let x: Result<i32, &str> = Ok(-3);
+    assert_eq!(x.is_ok(), true);
+    let x: Result<i32, &str> = Err("Some error message");
+    assert_eq!(x.is_err(), true);
+}
+
+/// # prime
+/// is a prime number?
+///
+/// 判断是否是质数
+///
+/// ```
+/// assert_eq!(true, prime(2));
+/// assert_eq!(true, prime(3));
+/// assert_eq!(false, prime(24));
+/// assert_eq!(true, prime(65537));
+/// ```
+///
+/// [rust blog](https://blog.rust-lang.org/)
+///
+/// ![rust icon](https://blog.rust-lang.org/images/rust-logo-blk.svg)
+
+fn prime(n: u32) -> bool {
+    let r = n % 6;
+    if n >= 6 && r != 1 && r != 5 {
+        return false;
+    }
+
+    let m = (n as f64).sqrt() as u32;
+    for i in 2..=m {
+        if n % i == 0 {
+            return false;
+        }
+    }
+    return true;
+}
+
+struct Person {
+    name: String,
+    age: u32,
+    sex: char,
+}
+
+trait MyAdd<RHS = Self> {
+    type Output;
+    fn my_add(self, rhs: RHS) -> Self::Output;
+}
+
+enum Message {
+    Quit,
+    Move(i32, i32),
+}
