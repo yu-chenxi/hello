@@ -5,7 +5,7 @@ fn sort() {
         v.push(rand::random::<i32>() % (N as i32));
     }
     v.sort();
-    print!("{:?}", &v[..10]);
+    println!("{:?}", &v[..10]);
 }
 
 fn main() {
