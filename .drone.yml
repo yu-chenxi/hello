@@ -4,7 +4,7 @@ name: default
 steps:
 - name: run
   image: rust
-    volumes:
+  volumes:
   - name: vendor
     path: /drone/src/vendor/
   commands:
