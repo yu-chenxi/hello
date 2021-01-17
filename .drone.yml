@@ -9,8 +9,8 @@ steps:
   #   path: /drone/src/vendor/
   commands:
   # - cargo vendor
-  - cargo build
-  - cargo run
+  - cargo build --release
+  - cargo run --release
 
 # volumes:
 #   - name: vendor
