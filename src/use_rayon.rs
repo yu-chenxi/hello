@@ -1,7 +1,8 @@
-use rayon::prelude::*;
+// use rayon::prelude::*;
 
 fn sum2(input: &[i32]) -> i32 {
-    input.par_iter().map(|i| i * i).sum()
+    // input.par_iter().map(|i| i * i).sum()
+    0
 }
 
 pub fn foo() {
