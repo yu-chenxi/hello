@@ -1,6 +1,6 @@
 use std::ops::AddAssign;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 struct Pt {
     x: i32,
     y: i32,
@@ -26,4 +26,9 @@ fn main() {
     let pt2 = Pt::default();
     pt1 += pt2;
     println!("pt1 = {:?}, pt2 = {:?}", pt1, pt2);
+    foo();
+}
+
+fn foo() {
+    debug_assert_eq!(Pt { x: -1, y: 0 }, Pt::default()); // not be useful in release mode
 }
