@@ -27,8 +27,19 @@ fn main() {
     pt1 += pt2;
     println!("pt1 = {:?}, pt2 = {:?}", pt1, pt2);
     foo();
+    bar();
 }
 
 fn foo() {
-    debug_assert_eq!(Pt { x: -1, y: 0 }, Pt::default()); // not be useful in release mode
+    // debug_assert_eq!(Pt { x: -1, y: 0 }, Pt::default()); // not be useful in release mode
+}
+
+fn bar() {
+    // type MyRes = Result<i32, String>;
+    // let x: MyRes = Err(String::from("a error"));
+    // x.unwrap();
+    // x.expect("expect i32 type");
+    // assert_eq!(atcual, expected)
+    // let x: MyRes = Ok(13);
+    // x.unwrap_err(); // panic if Ok
 }

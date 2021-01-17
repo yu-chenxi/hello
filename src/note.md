@@ -55,5 +55,21 @@ let y = x;
 // std::rc::Rc多个所有权
 // weak<T>保留对Rc<T>中值的引用
 // std::cell{Cell,RefCell}实现内部可变性
-// NLL(non-lexxcal lifetime): 非词法作用域生命周期
+// NLL(non-lexical lifetime): 非词法作用域生命周期
 // 装箱: 将值托管到堆内存
+/*
+drone架构:
+1. git server
+2. drone server(dispatch to runners(clusters))
+3. drone runner
+1 notify 2
+3 poll 2
+2 <=> 3 use manually gen secret to communicate
+
+git clone to /drone/src/ directory
+volume: /drone/src/target:/root/drone/target
+*/
+// reaper n. 收割者; 死神
+// zombie n. 僵尸
+// feedback n. 反馈
+// 
