@@ -72,3 +72,5 @@ volume: /drone/src/target:/root/drone/target
 // reaper n. 收割者; 死神
 // zombie n. 僵尸
 // feedback n. 反馈
+// internship n. 实习
+// docker build cache的问题:
