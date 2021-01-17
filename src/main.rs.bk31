@@ -1,0 +1,52 @@
+#[allow(dead_code)]
+fn sort() {
+    // const N: usize = 1000000;
+    // let mut v = Vec::with_capacity(N);
+    // for _ in 0..N {
+    //     v.push(rand::random::<i32>() % (N as i32));
+    // }
+    // v.sort();
+    // println!("{:?}", &v[..10]);
+}
+
+fn sum(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+use std::thread;
+fn main() {
+    // sort();
+    // let _s = sum(1u32, 2u32);
+    debug_assert_eq!(5, sum(2, 3));
+    let t = thread::spawn(|| {
+        let x = false;
+        debug_assert!(x, "x wasn't true");
+        let a = 3;
+        let b = 28;
+        debug_assert!(a + b == 30, "a = {}, b = {}", a, b);
+    });
+    if let Ok(r) = t.join() {
+        println!("{:?}", r);
+    }
+    println!("no panic in main thread!");
+    debug_assert_eq!(Some("Uku"), get_shortest(vec!["Uku", "Felipe"]));
+    debug_assert_eq!(Some(3), get_shortest_length(vec!["Uku", "Felipe"]));
+}
+
+fn get_shortest(names: Vec<&str>) -> Option<&str> {
+    if names.len() > 0 {
+        let mut shortest = names.get(0).unwrap();
+        for name in &names[1..] {
+            if name.len() < shortest.len() {
+                shortest = name;
+            }
+        }
+        Some(*shortest)
+    } else {
+        None
+    }
+}
+
+fn get_shortest_length(names: Vec<&str>) -> Option<usize> {
+    get_shortest(names).map(|x| x.len())
+}
