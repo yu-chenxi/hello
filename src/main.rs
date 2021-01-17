@@ -1,3 +1,5 @@
+mod use_rayon;
+
 fn main() {
     let v: Vec<i32> = vec![1, 2, 3];
     println!("{:?}", v);
@@ -13,6 +15,7 @@ fn main() {
     // f(2) = 2 * 8 + 3 = 19
     println!("{}", s);
     foo();
+    use_rayon::foo();
 }
 
 trait Fly {
