@@ -28,6 +28,8 @@ fn main() {
     println!("pt1 = {:?}, pt2 = {:?}", pt1, pt2);
     foo();
     bar();
+    let b: bool = rand::random();
+    println!("b = {}", b);
 }
 
 fn foo() {

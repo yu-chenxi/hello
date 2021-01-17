@@ -3,3 +3,4 @@ src/prime.txt.zst
 .vscode/
 .cargo/
 hello.wasm
+vendor/
