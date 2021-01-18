@@ -12,7 +12,6 @@ steps:
   - cargo build --release
   - cargo run --release
   - ls target/release
-
 - name: deploy
   image: appleboy/drone-scp
   settings:
@@ -21,6 +20,7 @@ steps:
     password: 330681Ycx
     target: /root/
     source: /drone/src/
+    rm: false
 # volumes:
 #   - name: vendor
 #     host:
