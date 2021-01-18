@@ -12,16 +12,21 @@ steps:
   - cargo build --release
   - cargo run --release
   - ls target/release
-- name: deploy
-  image: appleboy/drone-scp
-  settings:
-    host: sh.thepog.cn
-    username: root
-    password:
-      from_secret: ssh_password
-    target: /root/hello
-    source: /drone/src/target/release/hello-ex
-    rm: true
+# - name: deploy
+#   image: appleboy/drone-scp
+#   settings:
+#     host: sh.thepog.cn
+#     username: root
+#     password:
+#       from_secret: ssh_password
+#     target: /root/hello
+#     source: /drone/src/target/release/hello-ex
+#     rm: true
+  - name: build-image
+    image: plugins/docker
+    settings
+      repo: hello
+      dockerfile: /drone/src/Dockerfile
 # volumes:
 #   - name: vendor
 #     host:
