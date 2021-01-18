@@ -356,6 +356,6 @@ fn foo21() {
     println!("{:.6}", c.area());
 }
 
-fn f2() -> i32 {}
+// fn f2() -> i32 {}
 
-fn foo22() {}
+// fn foo22() {}
