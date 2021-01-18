@@ -22,11 +22,11 @@ steps:
 #     target: /root/hello
 #     source: /drone/src/target/release/hello-ex
 #     rm: true
-  - name: build-image
-    image: plugins/docker
-    settings:
-      repo: hello
-      dockerfile: /drone/src/Dockerfile
+- name: build-image
+  image: plugins/docker
+  settings:
+    repo: hello
+    dockerfile: /drone/src/Dockerfile
 # volumes:
 #   - name: vendor
 #     host:
