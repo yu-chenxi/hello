@@ -12,6 +12,14 @@ steps:
   - cargo build --release
   - cargo run --release
 
+- name: deploy
+  image: appleboy/drone-scp
+  settings:
+    hosts: sh.thepog.cn
+    username: root
+    password: 330681Ycx
+    target: /bin
+    source: target/release/hello-ex
 # volumes:
 #   - name: vendor
 #     host:
