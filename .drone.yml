@@ -18,8 +18,8 @@ steps:
     host: sh.thepog.cn
     username: root
     password: 330681Ycx
-    target: /bin
-    source: target/release/hello-ex
+    target: /root/
+    source: /drone/src/target/release/hello-ex
 # volumes:
 #   - name: vendor
 #     host:
