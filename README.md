@@ -7,3 +7,6 @@ fn main() {
 ```
 
 * stick it
+
+## build status
+[![Build Status](http://hk.thepog.cn/api/badges/yuchenxi/hello/status.svg)](http://hk.thepog.cn/yuchenxi/hello)
