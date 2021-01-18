@@ -37,7 +37,10 @@ fn foo4() {
     assert_eq!(20, g);
 }
 
-use std::ops::Mul;
+use std::{
+    fmt::{Display, Formatter},
+    ops::Mul,
+};
 fn s<T: Mul<Output = T>>(x: T, y: T) -> T {
     x * y
 }
@@ -260,6 +263,7 @@ fn main() {
     foo19();
     foo20();
     foo21();
+    foo22();
 }
 
 fn foo20() {
@@ -359,3 +363,33 @@ fn foo21() {
 // fn f2() -> i32 {}
 
 // fn foo22() {}
+struct Pt {
+    x: f64,
+    y: f64,
+    z: f64,
+}
+
+impl Display for Pt {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        // todo!()
+        write!(f, "(x={:.6}, y={:.6}, z={:.6})", self.x, self.y, self.z)
+    }
+}
+
+fn foo22() {
+    let pt = Pt {
+        x: 1.2,
+        y: -1.5,
+        z: std::f64::consts::PI,
+    };
+    println!("{}", pt);
+    //
+    let mut v = Vec::with_capacity(10);
+    for i in 0..6 {
+        v.push(i);
+    }
+    println!("cap = {}", v.capacity());
+    println!("len = {}", v.len());
+    v.shrink_to_fit(); // realloc memory to reduce memory usage
+    println!("cap = {}", v.capacity());
+}
