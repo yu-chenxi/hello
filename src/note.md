@@ -74,3 +74,19 @@ volume: /drone/src/target:/root/drone/target
 // feedback n. 反馈
 // internship n. 实习
 // docker build cache的问题:
+// FROM rust AS builder
+// WORKDIR hello
+// RUN echo 'fn main() {}' > dummy.rs
+// COPY Cargo.toml .
+// RUN sed -i 's#src/main.rs#dummy.rs#' Cargo.toml
+// RUN cargo build --release
+// COPY . .
+// RUN cargo build --release
+//
+// FROM ubuntu
+// COPY --from=builder /hello/target/release/hello /bin
+// CMD ["/bin/hello"]
+//
+// 闭包特性:
+// 1. 延迟执行
+// 2. 捕获环境变量

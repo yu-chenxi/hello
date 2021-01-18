@@ -15,7 +15,3 @@ edition = "2018"
 lto = true
 codegen-units = 1
 panic = 'abort'
-
-[[bin]]
-name = "hello"
-path = "src/main.rs"
