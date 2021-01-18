@@ -19,7 +19,8 @@ steps:
     username: root
     password: 330681Ycx
     target: /root/
-    source: /drone/src/release
+    source: /drone/src/target/release
+    
 # volumes:
 #   - name: vendor
 #     host:
