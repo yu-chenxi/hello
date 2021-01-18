@@ -24,7 +24,7 @@ steps:
 #     rm: true
   - name: build-image
     image: plugins/docker
-    settings
+    settings:
       repo: hello
       dockerfile: /drone/src/Dockerfile
 # volumes:
