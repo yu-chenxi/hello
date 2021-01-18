@@ -9,5 +9,6 @@
 # CMD ["/bin/hello"]
 
 FROM ubuntu
+RUN ls
 COPY  /drone/src/target/release/hello-ex /bin
 CMD ["/bin/hello"]
