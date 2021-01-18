@@ -355,3 +355,7 @@ fn foo21() {
     println!("{}", c.y);
     println!("{:.6}", c.area());
 }
+
+fn f2() -> i32 {}
+
+fn foo22() {}
