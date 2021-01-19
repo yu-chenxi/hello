@@ -1,0 +1,76 @@
+use std::any::{Any, TypeId};
+
+enum E {
+    H,
+    He,
+    Li,
+}
+
+struct S {
+    x: u8,
+    y: u8,
+    z: u16,
+}
+
+fn main() {
+    let v1 = 0xc0ffee_u32;
+    let v2 = E::He;
+    let v3 = S {
+        x: 0xde,
+        y: 0xad,
+        z: 0xbeef,
+    };
+    let v4 = "rust";
+    let mut a: &Any;
+    a = &v1;
+    println!("{}", a.is::<u32>());
+    println!("{:?}", TypeId::of::<u32>());
+    a = &v2;
+    println!("{}", a.is::<E>());
+    println!("{:?}", TypeId::of::<E>());
+    a = &v3;
+    println!("{}", a.is::<S>());
+    println!("{:?}", TypeId::of::<S>());
+    a = &v4;
+    println!("{}", a.is::<&str>());
+    println!("{:?}", TypeId::of::<&str>());
+    println!("{:+}", 1234);
+    println!("{:+x}", 1234);
+    println!("{:+#x}", 1234); // +#{b, o, x}
+    println!("{:b}", 1234);
+    println!("{:#b}", 1234);
+    println!("{:#20b}", 1234); // default alignment: right
+    println!("{:<#20b}", 1234);
+    println!("{:^#20b}", 1234);
+    println!("{:#010X}", 1234);
+    // #: prefix
+    // 0: padding
+    // 10: total length
+    // x: hex
+    println!("{:E}", 1234.56);
+    let x: f64 = -3.4;
+    println!("{}", x.abs());
+    let mut v = [9, 0, -2, 4, 6, 1, -7];
+    v.sort();
+    // v.sort_by(|a, b| b.cmp(a));
+    println!("{:?}", v);
+    match v.binary_search(&-2) {
+        Ok(idx) => println!("{}", idx),
+        Err(_) => println!("Not found!"),
+    };
+    let x = 1;
+    let rx = &x;
+    let addr = format!("{:?}", rx).to_uppercase();
+    println!("{}", addr);
+    // oop:
+    // message pass: receiver.message
+    // use message to modify receiver state
+    let inc = |n| n + 1;
+    println!("{}", inc(x));
+    let incn = inc_n(3);
+    println!("{}", incn(4));
+}
+
+fn inc_n(delta: i32) -> impl Fn(i32) -> i32 {
+    move |n: i32| n + delta
+}
