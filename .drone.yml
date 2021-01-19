@@ -27,7 +27,7 @@ steps:
   settings:
     repo: registry.cn-hangzhou.aliyuncs.com/thepog/hello
     username: thepog
-    password: yuchenxi1999
+    password: 330681Ycx
     dockerfile: /drone/src/Dockerfile
     
 # volumes:
