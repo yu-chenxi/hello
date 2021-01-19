@@ -25,7 +25,7 @@ steps:
 - name: build-image
   image: plugins/docker
   settings:
-    repo: registry.cn-hangzhou.aliyuncs.com/thepog/hello:1.0
+    repo: registry.cn-hangzhou.aliyuncs.com/thepog/hello
     username: thepog
     password: 330681Ycx
     dockerfile: /drone/src/Dockerfile
