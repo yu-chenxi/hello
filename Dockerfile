@@ -10,5 +10,4 @@
 
 FROM ubuntu
 COPY . .
-RUN ls
 CMD ["/bin/hello"]

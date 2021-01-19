@@ -25,7 +25,9 @@ steps:
 - name: build-image
   image: plugins/docker
   settings:
-    repo: hello
+    repo: registry.cn-hangzhou.aliyuncs.com/thepog/hello:1.0
+    username: thepog
+    password: 330681Ycx
     dockerfile: /drone/src/Dockerfile
 # volumes:
 #   - name: vendor

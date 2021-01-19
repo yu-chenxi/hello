@@ -264,6 +264,8 @@ fn main() {
     foo20();
     foo21();
     foo22();
+    foo23();
+    foo24();
 }
 
 fn foo20() {
@@ -392,4 +394,43 @@ fn foo22() {
     println!("len = {}", v.len());
     v.shrink_to_fit(); // realloc memory to reduce memory usage
     println!("cap = {}", v.capacity());
+}
+
+macro_rules! unless {
+    // match pattern: match and expand
+    // $arg: capture variable
+    // expr: capture type
+    ($arg:expr, $branch:expr) => {
+        if !$arg {
+            $branch
+        }
+    };
+}
+
+fn foo23() {
+    fn cmp(a: i32, b: i32) {
+        unless!(a > b, println!("{} < {}", a, b));
+    }
+    let (a, b) = (1, 2);
+    cmp(a, b);
+}
+
+macro_rules! hashmap {
+    ($($key:expr => $value:expr), * $(,)*) => {
+        {
+        let mut _map = std::collections::HashMap::new();
+        $(
+            _map.insert($key, $value);
+        )*
+        _map
+        }
+    };
+}
+
+fn foo24() {
+    let hm = hashmap!(
+        "a" => 1,
+        "b" => 2,// do not have ;
+    );
+    println!("{:?}", hm);
 }
