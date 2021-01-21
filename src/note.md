@@ -98,3 +98,6 @@ volume: /drone/src/target:/root/drone/target
 // PartialOrd: 偏序(partial_cmp, lt, le, gt, ge)
 // Ord: 全序(cmp, max, min)
 // std::cmp::Ordering;
+// cheat sheet: n. 备忘单
+// bloat: v. 膨胀
+// lint: n. 静态分析(static analysis)

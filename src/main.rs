@@ -1,0 +1,133 @@
+use std::io::{stdout, BufWriter, Error};
+use std::{fs, io::Write};
+
+use fs::File;
+
+fn main() -> Result<(), Error> {
+    foo();
+    foo2();
+    foo3();
+    foo4();
+    foo5();
+    foo6();
+    foo7();
+    foo8()?;
+    foo9()?;
+    Ok(())
+}
+
+fn foo() {
+    let hello = vec![104, 101, 108, 108, 111];
+    let hello = unsafe { String::from_utf8_unchecked(hello) };
+    println!("{}", hello);
+}
+
+static mut COUNTER: u32 = 0;
+
+fn foo2() {
+    let inc = 3;
+    unsafe {
+        COUNTER += inc;
+        println!("COUNTER: {}", COUNTER);
+    }
+}
+
+fn foo3() {
+    let mut s = String::from("hello");
+    let r1 = &s as *const String;
+    let r2 = &mut s as *mut String;
+    println!("{}", r1 == r2);
+    // let addr: usize = 0x400000;
+    // let r3 = addr as *const u32;
+    unsafe {
+        println!("r1 is: {}", *r1);
+        println!("r2 is: {}", *r2);
+        // println!("r3 is: {}", *r3);
+    }
+}
+
+fn foo4() {
+    let s = "Rust";
+    let ptr = s.as_ptr();
+    unsafe {
+        println!("{}", *ptr.offset(1) as char);
+        println!("{}", *ptr.offset(3) as char);
+    }
+    println!("{:?}", std::ptr::null() as *const u32);
+}
+
+fn foo5() {
+    // matrix = array of arrays
+    // [T;2]
+    // T = [i32;2]
+    let m = [[1, 2], [3, 4]];
+    let mut s = 0;
+    for r in &m {
+        for c in r {
+            s += c;
+        }
+    }
+    println!("{}", s);
+}
+
+trait Fly {
+    fn fly(&mut self);
+}
+
+#[derive(Default)]
+struct Duck {
+    call_cnt: u32,
+}
+
+impl Fly for Duck {
+    fn fly(&mut self) {
+        println!("Duck can fly!");
+        self.call_cnt += 1;
+    }
+}
+
+struct Pig;
+impl Fly for Pig {
+    fn fly(&mut self) {
+        println!("Pig can't fly!");
+    }
+}
+
+fn dyn_disp(f: &mut dyn Fly) {
+    println!("{}", std::mem::size_of_val(&f)); // data(*mut T) + vtable
+    f.fly();
+}
+
+fn foo6() {
+    let mut duck = Duck::default();
+    let mut pig = Pig;
+    dyn_disp(&mut duck);
+    dyn_disp(&mut pig);
+}
+
+fn foo7() {
+    let ok: bool = rand::random();
+    println!("{}", ok);
+}
+
+fn foo8() -> Result<(), Error> {
+    let lns = ["one", "two", "three"];
+    let stdout = stdout();
+    {
+        let mut lock = stdout.lock();
+        for ln in &lns {
+            writeln!(lock, "{}", ln)?;
+        }
+    }
+    Ok(())
+}
+
+fn foo9() -> Result<(), Error> {
+    let lns = ["one", "two", "three"];
+    let out = File::create("./test.txt")?;
+    let mut buf = BufWriter::new(out);
+    for ln in &lns {
+        writeln!(buf, "{}", ln)?;
+    }
+    buf.flush()
+}
