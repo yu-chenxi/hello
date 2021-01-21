@@ -10,3 +10,5 @@ fn main() {
 
 ## build status
 [![Build Status](http://hk.thepog.cn/api/badges/yuchenxi/hello/status.svg)](http://hk.thepog.cn/yuchenxi/hello)
+
+arena: n. 舞台, 竞技场

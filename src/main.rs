@@ -1,4 +1,27 @@
-use std::{cell::RefCell, mem, rc::Rc};
+use bumpalo::Bump;
+use std::{cell::RefCell, mem, ops::AddAssign, rc::Rc};
+
+fn my_sum<T>(v: &[T]) -> T
+where
+    T: AddAssign,
+    T: Default,
+    T: Copy,
+{
+    let mut s = T::default();
+    for e in v {
+        s += *e;
+    }
+    s
+}
+
+fn foo4() {
+    let v = [2, 3, 5];
+    let v2 = [-2.5, 1.3, 0.2];
+    let s = my_sum(&v);
+    let s2 = my_sum(&v2);
+    println!("s = {}", s);
+    println!("s2 = {}", s2);
+}
 
 fn hello() -> Box<String> {
     Box::new(String::from("hello rust!"))
@@ -33,6 +56,10 @@ fn main() {
     foo();
     foo2();
     foo3();
+    foo4();
+    foo5(&[1, 2, 4, 8], 0);
+    foo6();
+    foo7();
 }
 
 fn foo() {
@@ -58,4 +85,35 @@ fn foo() {
         }
     }
     v.sort_by(|a, b| b.cmp(a));
+}
+
+fn foo5(v: &[i32], idx: usize) {
+    if idx < v.len() - 1 {
+        foo5(v, idx + 1);
+    }
+    println!("{}", v[idx]);
+}
+
+#[derive(Debug)]
+struct Person {
+    name: String,
+    age: u32,
+}
+
+impl Person {
+    fn new(name: String, age: u32) -> Self {
+        Self { name, age }
+    }
+}
+
+fn foo6() {
+    let arena = Bump::new();
+    let p = arena.alloc(Person::new(String::from("mike"), 18));
+    println!("{:?}", p);
+}
+
+fn foo7() {
+    println!("{}", mem::size_of::<Box<[i32]>>()); // ptr + len(special)
+    println!("{}", mem::size_of::<Box<(u64, u64)>>()); // ptr
+    println!("{}", mem::size_of::<Box<String>>()); // ptr
 }
