@@ -101,3 +101,7 @@ volume: /drone/src/target:/root/drone/target
 // cheat sheet: n. 备忘单
 // bloat: v. 膨胀
 // lint: n. 静态分析(static analysis)
+// wall-time: n. 实际时间
+// moderate a. 适度的
+// necessarily ad. 必然的
+// a great deal of 大量的
