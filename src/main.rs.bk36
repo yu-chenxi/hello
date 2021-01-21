@@ -12,8 +12,7 @@ fn main() -> Result<(), Error> {
     foo6();
     foo7();
     foo8()?;
-    foo9()?;
-    Ok(())
+    foo9()
 }
 
 fn foo() {
@@ -106,7 +105,8 @@ fn foo6() {
 }
 
 fn foo7() {
-    let ok: bool = rand::random();
+    // let ok: bool = rand::random();
+    let ok = true;
     println!("{}", ok);
 }
 
