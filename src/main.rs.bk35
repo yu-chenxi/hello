@@ -6,6 +6,8 @@ enum E {
     Li,
 }
 
+// 属性宏(marco)
+#[derive(Debug, Default)]
 struct S {
     x: u8,
     y: u8,
@@ -21,7 +23,7 @@ fn main() {
         z: 0xbeef,
     };
     let v4 = "rust";
-    let mut a: &Any;
+    let mut a: &dyn Any;
     a = &v1;
     println!("{}", a.is::<u32>());
     println!("{:?}", TypeId::of::<u32>());
@@ -69,6 +71,19 @@ fn main() {
     println!("{}", inc(x));
     let incn = inc_n(3);
     println!("{}", incn(4));
+    let mut v = [9.71, 0.0, -2.66, 4.21, 6.3, 1.5, -7.1];
+    // v.sort();
+    v.sort_by(|a, b| a.partial_cmp(b).unwrap()); // float: partial compare
+    println!("{:?}", v);
+    a = &v;
+    println!("{}", a.is::<[f64; 7]>());
+    println!("{:?}", a.type_id());
+    if let Some(v) = a.downcast_ref::<[f64; 7]>() {
+        println!("{:?}", v);
+    }
+    // let x2;
+    let s = S::default();
+    println!("{:?}", s);
 }
 
 fn inc_n(delta: i32) -> impl Fn(i32) -> i32 {

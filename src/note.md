@@ -90,3 +90,11 @@ volume: /drone/src/target:/root/drone/target
 // 闭包特性:
 // 1. 延迟执行
 // 2. 捕获环境变量
+//
+// 1. 偏序(partial order): f32/f64
+// 2. 全序(total order): i32/i64
+// PartialEq: 部分等价(eq/ne)
+// Eq: 等价
+// PartialOrd: 偏序(partial_cmp, lt, le, gt, ge)
+// Ord: 全序(cmp, max, min)
+// std::cmp::Ordering;

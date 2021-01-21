@@ -1,0 +1,164 @@
+// unicode code point -> utf-8 code unit
+/*
+utf-8:
+1110|0111 10|011111 1010|0101
+len = 3b
+0111
+0111
+1110
+0101
+*/
+
+fn foo3() {
+    let mut vec = Vec::new();
+    vec.push(1);
+    vec.push(2);
+    println!("{:?}", vec.pop());
+    vec.push(3);
+    println!("{:?}", vec.get(1));
+    let mut v2 = vec![4, 5, 6];
+    vec.append(&mut v2);
+    println!("{:?}", vec);
+    vec.swap(1, 2);
+    println!("{:?}", vec);
+    vec.clear();
+    println!("{}", vec.capacity());
+    struct Foo;
+    let mut v2 = Vec::new();
+    v2.push(Foo);
+    v2.push(Foo);
+    println!("{}", v2.capacity() == std::usize::MAX);
+    println!("{}", v2.len());
+    println!("{:p}", v2.as_ptr()); // 0x1
+    let v2 = [10, 40, 50];
+    println!("{}", v2.contains(&40));
+    println!("{}", v2.contains(&30));
+    println!("{}", v2.starts_with(&[10, 40]));
+}
+
+fn foo4() {
+    let x = 768;
+    println!("{:x}", x);
+    println!("{:X}", x);
+    println!("{:#x}", x);
+    println!("{:+#06x}", x);
+    println!("{:#010x}", -x);
+}
+
+// $x: a + 1
+macro_rules! my_abs {
+    ($x:expr) => {
+        if $x < 0 {
+            -$x
+        } else {
+            $x
+        }
+    };
+}
+
+#[allow(non_upper_case_globals)]
+static mut g_x: u32 = 0;
+
+fn foo5() {
+    let x = -5;
+    let x = my_abs!(x + 1);
+    println!("{}", x);
+    unsafe {
+        g_x += 1;
+        println!("{}", g_x); // read or write global is unsafe
+    }
+    let delta = 3;
+    let inc = |n| n + delta;
+    println!("{}", inc(4));
+    println!("{}", inc(5));
+    let mut s = String::from("hello");
+    let st = || {
+        s.push_str(" rust!");
+        s
+    };
+    // println!("{}", s);
+    let s2 = st();
+    println!("{}", s2);
+    // let s2 = st();
+    println!("{}", delta);
+}
+
+fn main() {
+    let zhi = '知';
+    let zhi_u32 = zhi as u32; // code point
+    println!("U+{:x}", zhi_u32); // U+77e5
+    let mut b = [0; 4];
+    zhi.encode_utf8(&mut b);
+    for e in &b {
+        println!("{:b}", e);
+    }
+    println!("{}", 'x'.is_digit(16));
+    println!("{:?}", 'e'.to_digit(16));
+    println!("{}", '\r'.is_whitespace());
+    println!("{}", '9'.is_numeric());
+    foo();
+    foo2();
+    foo3();
+    foo4();
+    foo5();
+}
+
+fn foo() {
+    let mut a = String::from("fooα道"); // store char in utf-8 encoding
+    println!("{:p}", a.as_ptr()); // heap address
+    println!("{:p}", &a); // stack address
+    println!("{}", a.len()); // 3+2+3
+    a.reserve(10); // expand
+    println!("{}", a.capacity());
+    let s1 = "the tao of rust";
+    let s2 = s1
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect::<String>();
+    println!("{}", s2);
+    let s3 = s1.to_string();
+    println!("{}", s3);
+    // char: code point
+    // u8 array: utf-8 code unit(compressed char)
+    // let c = a[1];
+    // the type `String` can't be indexed by `{integer}`
+    let mut s3 = String::from("Hello, ");
+    s3.push('R');
+    s3.push_str("ust!");
+    println!("{}", s3);
+    for c in a.chars() {
+        println!("{}", c);
+    }
+    let mut s4 = String::with_capacity(3);
+    s4.insert(0, 'f');
+    s4.insert(1, 'o');
+    s4.insert(2, 'o');
+    s4.insert_str(3, "bar");
+    println!("{}", s4);
+    let s5 = "-125";
+    let n = s5.parse::<i32>().unwrap();
+    println!("{}", n);
+    let s5 = "-12.56";
+    let n = s5.parse::<f64>().unwrap();
+    println!("{}", n);
+}
+
+fn foo2() {
+    let s = r"1234
+                   5678
+                   9876
+                   4321";
+    let (mut x, mut y) = (0, 0);
+    for (idx, val) in s.lines().enumerate() {
+        let val = val.trim(); // trim whitespace
+        let left = val.get(idx..idx + 1).unwrap().parse::<i32>().unwrap();
+        let right = val
+            .get(3 - idx..3 - idx + 1)
+            .unwrap()
+            .parse::<i32>()
+            .unwrap();
+        x += left;
+        y += right;
+    }
+    println!("{}", x + y);
+}

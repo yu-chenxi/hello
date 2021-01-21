@@ -1,0 +1,62 @@
+use std::thread;
+use std::{
+    cmp::Ordering,
+    sync::{Arc, Mutex},
+};
+
+#[derive(Debug, Default, Clone, Copy)]
+struct Pt {
+    x: i32,
+    y: i32,
+}
+
+fn foo() {
+    let pt = Arc::new(Mutex::new(Pt::default()));
+    let mut handles = vec![];
+    for _ in 0..3 {
+        let pt = pt.clone();
+        // in main thread(sync)
+        let handle = thread::spawn(move || {
+            let mut pt = pt.lock().unwrap();
+            pt.x += 1;
+            pt.y -= 1;
+        });
+        handles.push(handle); // in main thread
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+    println!("{:?}", pt.lock().unwrap());
+}
+
+fn foo2() {
+    let mut v = [Pt { x: 3, y: -6 }, Pt { x: 0, y: 1 }, Pt { x: -5, y: 3 }];
+    v.sort_by(|x, y| {
+        if x.x + x.y < y.x + y.y {
+            Ordering::Less
+        } else {
+            Ordering::Greater
+        }
+    }); // sort by Pt::x
+    println!("{:?}", v);
+    println!("{:?}", "hello".cmp("fuck")); // "hello" > "fuck"
+}
+
+fn foo3() {
+    let v1: Vec<i32> = vec![1, 2, 3];
+    let v2: Vec<i32> = vec![4, 5];
+    // zipped vector len = min(v1.len(), v2.len)
+    let s = v1.iter().zip(&v2).fold(0, |s, t| s + t.0 * t.1);
+    println!("{}", s);
+    match v1.binary_search(&3) {
+        Ok(idx) => println!("{}", idx),
+        Err(_) => println!("Not found!"),
+    };
+}
+
+fn main() {
+    foo();
+    foo2();
+    foo3();
+}

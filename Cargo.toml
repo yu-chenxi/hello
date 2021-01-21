@@ -1,5 +1,5 @@
 [package]
-name = "hello-ex"
+name = "hello"
 version = "0.1.1"
 authors = ["makecodechangeword@outlook.com"]
 edition = "2018"
@@ -17,5 +17,5 @@ codegen-units = 1
 panic = 'abort'
 
 [[bin]]
-name = "hello-ex"
+name = "hello"
 path = "src/main.rs"
