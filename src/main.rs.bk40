@@ -1,0 +1,57 @@
+use rayon::prelude::*;
+
+fn sum_of_squares(input: &[i32]) -> i32 {
+    input.par_iter().map(|&i| i * i).sum()
+}
+
+fn incrememt_all(input: &mut [i32]) {
+    input.par_iter_mut().for_each(|p| *p += 1);
+}
+
+fn main() {
+    foo();
+    foo2();
+}
+
+fn psum(v: &[i32], l: u32, r: u32) -> i32 {
+    const N: u32 = 16;
+    if r - l <= N {
+        let s = &v[l as usize..=r as usize];
+        s.iter().fold(0, |acc, e| acc + e)
+    } else {
+        let m = (l + r) / 2;
+        let (a, b) = rayon::join(|| psum(v, l, m), || psum(v, m + 1, r));
+        a + b
+    }
+}
+
+fn foo2() {
+    const N: u32 = 100000;
+    let mut v = Vec::with_capacity(N as usize);
+    for _ in 0..N {
+        let e: i32 = rand::random();
+        let e = e % (N as i32);
+        v.push(e);
+    }
+    let s = psum(&v, 0, N - 1);
+    let s2 = v.iter().fold(0, |acc, e| acc + e);
+    assert_eq!(s2, s);
+    println!("s = {}", s);
+}
+
+fn foo() {
+    const N: usize = 10;
+    let mut v = Vec::with_capacity(N);
+    for e in 1..=N {
+        v.push(e as i32);
+    }
+    let r = sum_of_squares(&v);
+    println!("{}", r);
+    incrememt_all(&mut v);
+    println!("{:?}", v);
+}
+
+/*
+5000 elements:
+16380 element size new
+*/
