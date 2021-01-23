@@ -10,4 +10,5 @@
 
 FROM ubuntu
 COPY . .
+
 CMD ["/bin/hello"]

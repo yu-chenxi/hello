@@ -1,6 +1,4 @@
 /target
-src/prime.txt.zst
 .vscode/
 .cargo/
-hello.wasm
-vendor/
+mybook/book
