@@ -1,0 +1,87 @@
+use std::any::Any;
+use std::mem;
+
+#[derive(Debug)]
+struct Pt {
+    x: i32,
+    y: i32,
+}
+
+fn foo() {
+    let pt = Pt { x: 1, y: 2 };
+    let Pt { x, y } = pt;
+    println!("{} {}", x, y);
+}
+
+fn foo2() {
+    let any: &dyn Any;
+    let x = 3;
+    any = &x;
+    assert_eq!(Some(&3), any.downcast_ref::<i32>()); // Some(&i32)
+    assert_eq!(3, *any.downcast_ref::<i32>().unwrap());
+}
+
+fn foo3() {
+    let v = vec![1, 2, 3];
+    let re = &v[1];
+    assert_eq!(&2, re);
+    assert_eq!(2, *re);
+}
+
+fn foo4() {
+    let x = Box::new(3);
+    #[allow(unused_assignments)]
+    let mut y = Box::new(5);
+    y = x;
+    // println!("{}", x);
+    println!("{}", y);
+}
+
+fn foo5() {
+    let m = [[2, 5], [11, 17]];
+    let mut s = 0;
+    for l in &m {
+        for e in l {
+            s += e;
+        }
+    }
+    println!("{}", s);
+}
+
+fn foo6() {
+    let mut books = Vec::<String>::new();
+    let book = "C++ Prime".to_string();
+    books.push(book);
+    books.push(String::from("The rust programming language"));
+    println!("{:#?}", books);
+    const N: u32 = 3;
+    let mut pts = Vec::<Pt>::with_capacity(N as usize);
+    pts.push(Pt { x: 1, y: 2 });
+    pts.push(Pt { x: 0, y: 0 });
+    pts.push(Pt { x: -2, y: 2 });
+    println!("{:?}", pts);
+    println!("{}", mem::size_of::<Box<i32>>());
+    println!("{}", mem::size_of::<Box<[i32]>>()); // *T + len
+    println!("{}", mem::size_of::<Box<Vec<i32>>>());
+    println!("{}", mem::size_of::<Box<dyn Drop>>()); // *T + vtable
+    let s = json::stringify(books);
+    println!("{}", s);
+}
+
+fn foo7() {
+    let v = vec![1, 2, 3];
+    let s = json::stringify(v);
+    println!("{}", s);
+    let s = stringify!(Pt { x: 3, y: 4 });
+    println!("{}", s);
+}
+
+fn main() {
+    foo();
+    foo2();
+    foo3();
+    foo4();
+    foo5();
+    foo6();
+    foo7();
+}
