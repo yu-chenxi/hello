@@ -1,349 +1,105 @@
-use std::{
-    cell::RefCell,
-    fmt::Debug,
-    fs::File,
-    io::BufWriter,
-    io::Error,
-    io::{stdin, Write},
-    mem,
-    rc::Rc,
-    sync::{Arc, Mutex},
-    thread,
-    time::Duration,
-};
+use std::{process, time::SystemTime};
 
-use mem::size_of_val;
-
-#[cfg(test)]
-fn prime(n: u32) -> bool {
-    let r = n % 6;
-    if n >= 6 && r != 1 && r != 5 {
-        return false;
-    }
-
-    let m = (n as f64).sqrt() as u32;
-    for i in 2..=m {
-        if n % i == 0 {
-            return false;
-        }
-    }
-    true
+fn inc_n(delta: i32) -> impl Fn(i32) -> i32 {
+    move |n: i32| n + delta
+    // borrow with ref
 }
 
-#[test]
-fn test_prime() {
-    let tests = [
-        (true, 2),
-        (true, 17),
-        (false, 24),
-        (false, 169),
-        (true, 65537),
-    ];
-    for test in &tests {
-        assert_eq!(test.0, prime(test.1));
-    }
-}
-
-// use rust-analyzer
 fn foo() {
-    let x = 3; // 3 -> enter -> . -> let
-    let rx = Box::new(x); // x.box
-    println!("{}", rx);
+    let inc = inc_n(3);
+    let r = inc(2);
+    println!("{}", r);
 }
 
-fn foo2() -> Result<(), Error> {
-    let file = File::create("./my.txt")?;
-    let mut buf = BufWriter::new(file);
-    writeln!(buf, "hello buffer!")?;
-    buf.flush()
+fn foo2() {
+    let s = "hello".to_string();
+    let c = || s; // capture with owership
+    c();
+    // println!("{}", s); moved
+    let mut n = 1;
+    let mut c2 = || n += 1; // capture with &mut n
+    c2();
+    println!("{}", n);
+}
+
+// trait compound
+trait Eat {
+    fn eat(&self);
+}
+
+trait Mov {
+    fn mov(&self);
+}
+
+struct Dog {
+    name: String,
+}
+
+impl Eat for Dog {
+    fn eat(&self) {
+        println!("{} eats bones.", self.name);
+    }
+}
+
+impl Mov for Dog {
+    fn mov(&self) {
+        println!("{} can run.", self.name);
+    }
+}
+
+fn static_disp<T: Eat + Mov>(em: &T) {
+    em.eat();
+    em.mov();
 }
 
 fn foo3() {
-    let v = vec![1, 2, 3];
-    let v_it = v.iter();
-    let s = v_it.sum::<i32>();
-    println!("{}", s);
-    let v_it = v.iter();
-    let s = v_it.fold(0, |acc, e| acc + e * e);
-    println!("{}", s);
+    let dog = Dog {
+        name: "mike".to_string(),
+    };
+    static_disp(&dog);
+    eprintln!("hello rust!");
+    let this_file = file!();
+    println!("defined file in: {}", this_file);
+    foo3_2();
 }
 
-fn my_div(a: f64, b: f64) -> Option<f64> {
-    if b == 0.0 {
-        None
-    } else {
-        Some(a / b)
-    }
+fn foo3_2() {
+    // in place
+    let mut v = vec![2, 5, 11];
+    println!("v = {:?}", v);
+    let s: i32 = v.iter().sum();
+    println!("s = {}", s);
+    v.iter_mut().for_each(|e| *e += 1);
+    println!("v = {:?}", v);
+    let s = v.iter().fold(1, |acc, e| acc * e);
+    println!("s = {}", s);
 }
 
 fn foo4() {
-    let x = 3.0;
-    let y = 0.0;
-    match my_div(x, y) {
-        Some(r) => println!("{}", r),
-        None => println!("div 0!"),
-    }
+    let now = SystemTime::now();
+    // println!("do someing..."); 39us
+    // const SIZ: usize = 1024; 5us
+    // let _v = Vec::<i32>::with_capacity(SIZ);
+    // let cnt = AtomicU32::new(0); // Ordering::SeqCst
+    // const N: u32 = 1000000;
+    // for _ in 0..N {
+    //     cnt.fetch_add(1, Ordering::Relaxed);
+    // }
+    let elapse = now.elapsed().unwrap(); // time counting
+    println!("{:?}", elapse);
+    // process::exit(3i32);
 }
 
-macro_rules! my_max {
-    ($a:expr, $b:expr) => {
-        if $a > $b {
-            $a
-        } else {
-            $b
-        }
-    };
-}
-
-#[allow(dead_code)]
-fn foo5() {
-    let mut ln = String::new();
-    let n = stdin().read_line(&mut ln).unwrap();
-    let a = ln[..n - 1].parse::<i32>().unwrap();
-    ln.clear();
-    let n = stdin().read_line(&mut ln).unwrap();
-    let b = ln[..n - 1].parse::<i32>().unwrap();
-    println!("max of {}, {} is {}", a, b, my_max!(a, b));
-    println!("hello a = {}", a); // "string literal".println
-}
-
-// ctrl-shift-o: fuzzy search symbol in a file
 fn main() {
     foo();
-    foo2().unwrap();
+    foo2();
     foo3();
     foo4();
-    // foo5();
-    foo6(); // fuzz select
-    foo7();
-    foo8();
-    foo9();
-    foo10();
-    foo11();
 }
 
-fn foo6() {
-    let mut stack = vec![];
-    stack.push(1);
-    stack.push(2);
-    stack.push(3);
-    while let Some(top) = stack.pop() {
-        println!("{}", top);
-    }
-}
-
-fn foo7() {
-    let age: Result<u8, _> = "34".parse();
-    if let Ok(age) = age {
-        println!("{}", age);
-    }
-}
-
-fn foo8() {
-    let v = vec!['a', 'b', 'c'];
-    for (idx, val) in v.iter().enumerate() {
-        println!("{} is at index {}", val, idx);
-    }
-    let (_x, _y, _z) = (1, 2, 3);
-    let pt = (3, 5);
-    fn coord(&(x, y): &(i32, i32)) {
-        // ref of tuple
-        println!("{} {}", x, y);
-    }
-    coord(&pt);
-}
-
-fn foo9() {
-    let x = 'c';
-    let y = 'X';
-    fn judge(c: char) {
-        let s = match c {
-            'a'..='z' => "upper case",
-            'A'..='Z' => "lower case",
-            _ => "other letters",
-        };
-        println!("{}", s);
-    }
-    judge(x);
-    judge(y);
-    struct Pt {
-        x: i32,
-        y: i32,
-    };
-    let p1 = Pt { x: 3, y: 7 };
-    let Pt { y, x } = p1;
-    println!("{} {}", x, y);
-    let Pt { y: a, x: b } = p1;
-    println!("{} {}", a, b); // 7 3
-                             // let p2 = Pt { x: 5, y: 0 };
-    let p2 = Pt { x: 1, y: 3 };
-    match p2 {
-        Pt { x, y: 0 } => println!("On the x axis at {}", x),
-        Pt { x: 0, y } => println!("On the y axis at {}", y),
-        Pt { x, y } => println!("On neither axis: ({}, {})", x, y),
-    }
-    foo9_2();
-    // match p2 {
-    //     Pt { x, .. } => {println!("{}", x);},
-    // };
-    let Pt { x, .. } = p2;
-    println!("{}", x);
-}
-
-fn foo9_2() {
-    fn inc(n: i32, _: i32) -> i32 {
-        n + 1
-    }
-    type Bop = fn(i32, i32) -> i32;
-    let bop: Bop = inc;
-    println!("{}", bop(3, 1));
-}
-
-fn foo10() {
-    let x = 3;
-    let sx = Rc::new(RefCell::new(x)); // runtime borrow check
-    {
-        let mut rx = sx.borrow_mut();
-        *rx += 4;
-        // {value(ptr), borrow(ptr)}
-        println!("{}", size_of_val(&rx)); // rx.borrow
-                                          // rx dropped, update sx.borrow
-                                          // sx.borrow == rx.borrow
-    }
-    // let mut rx2 = sx.borrow_mut(); // 'already borrowed: BorrowMutError'
-    // *rx2 += 5;
-    let rx2 = sx.borrow();
-    println!("{}", *rx2);
-    let v = vec![2, 5, 11];
-    let it = v.iter(); // Iter{ptr, end}
-    println!("{}", mem::size_of_val(&it));
-    println!("{}", mem::size_of::<RefCell<i32>>()); // RefCell{borrow, ptr}
-}
-
-#[derive(Debug, Clone, Copy)]
-struct S<T, T2>
-// generic decl in struct right, in fn left
-where
-    T: Debug,
-    T2: Debug,
-{
-    x: T,
-    y: T2,
-}
-
-fn foo11() {/*  */
-    let s1 = S { x: -1, y: 3.15 };
-    let s2: S<i32, _> = s1; // _: auto deducation
-    println!("{:?}", s2);
-    foo11_2();
-    foo11_3();
-    foo11_4();
-}
-
-fn foo11_2() {
-    const N: u32 = 5;
-    let mut hs = Vec::with_capacity(N as usize);
-    let cnt = Arc::new(Mutex::new(0));
-
-    // for i in 0..N {
-    //     let cnt = cnt.clone();
-    //     let h = thread::spawn(move || {
-    //         let mut n = cnt.lock().unwrap();
-    //         *n += 1; // store in stack
-    //         println!("thread {}, n = {}", i, n);
-    //         thread::sleep(Duration::from_millis(20));
-    //     });
-    //     hs.push(h);
-    // }
-    (0..N).for_each(|i| {
-        let cnt = cnt.clone();
-        let h = thread::spawn(move || {
-            let mut n = cnt.lock().unwrap();
-            *n += 1; // store in stack
-            println!("thread {}, n = {}", i, n);
-            thread::sleep(Duration::from_millis(20));
-        });
-        hs.push(h);
-    });
-
-    hs.into_iter().for_each(|h| h.join().unwrap()); // for_each: consuming adapter
-                                                    // iter: &
-                                                    // iter_mut: &mut
-                                                    // into_iter: owership
-    println!("cnt = {}", cnt.lock().unwrap());
-}
-
-fn foo11_3() {
-    const N: u32 = 5;
-    let r = 0..N; // [0, N)
-    let r2 = 0..=N; // [0, N]
-    let r3 = (0..=N).step_by(2);
-    let r4 = (0..N).rev();
-    let r5 = (0..N).skip(1); // skip 1st element
-    println!("{:?}", r);
-    println!("{:?}", r2);
-    r3.into_iter().for_each(|e| println!("{}", e));
-    r4.into_iter().for_each(|e| println!("{}", e));
-    r5.into_iter().for_each(|e| println!("{}", e));
-}
-
-mod my {
-    use std::sync::atomic::{AtomicU32, Ordering};
-
-    #[derive(Default, Debug)]
-    pub struct Counter {
-        count: AtomicU32,
-    }
-
-    impl Counter {
-        #[allow(dead_code)]
-        pub fn get(&self) -> u32 {
-            self.count.load(Ordering::Relaxed)
-        }
-
-        pub fn inc(&self) -> u32 {
-            self.count.fetch_add(1, Ordering::Relaxed)
-        }
-    }
-
-    impl Iterator for Counter {
-        type Item = u32;
-
-        fn next(&mut self) -> Option<Self::Item> {
-            // todo!()
-            let n = self.inc();
-            if n <= 5 {
-                Some(n)
-            } else {
-                None
-            }
-        }
-    }
-}
-
-use my::Counter;
-
-fn foo11_4() {
-    let cnt = Counter::default();
-    // while let Some(n) = cnt.next() {
-    //     println!("{}", n);
-    // }
-    for n in cnt {
-        // into_iter
-        // scope moved
-        println!("{}", n);
-    }
-    // println!("{:?}", cnt);
-
-    let x = "hello".to_string();
-    let _x = { x };
-    // println!("{}", _x);
-}
-
-// # accelerate key
-// 1. ctrl-n: new untitled file
-// 2. ctrl-o: open file
-// 3. ctrl-b: toggle side bar visibility
-// 4. ctrl-1: focus first editor group
-// 5. ctrl-`: toggle integrated terminal
-// 6. ctrl-shift-o: go to symbol in editor
+// boxed closure => unboxed closure
+// method receiver => object
+// Fn: &self
+// FnMut: &mut self
+// FnOnce: self
+// unsound: a. 不健全的
