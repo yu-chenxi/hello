@@ -11,7 +11,7 @@ steps:
   # - cargo vendor
   - cargo build --release
   - cargo run --release
-  - ls target/release
+  # - ls target/release
 # - name: deploy
 #   image: appleboy/drone-scp
 #   settings:
@@ -22,13 +22,13 @@ steps:
 #     target: /root/hello
 #     source: /drone/src/target/release/hello-ex
 #     rm: true
-- name: build-image
-  image: plugins/docker
-  settings:
-    repo: registry.cn-hangzhou.aliyuncs.com/thepog/hello
-    username: thepog
-    password: 330681Ycx
-    dockerfile: /drone/src/Dockerfile
+# - name: build-image
+#   image: plugins/docker
+#   settings:
+#     repo: registry.cn-hangzhou.aliyuncs.com/thepog/hello
+#     username: thepog
+#     password: 330681Ycx
+#     dockerfile: /drone/src/Dockerfile
     
 # volumes:
 #   - name: vendor
