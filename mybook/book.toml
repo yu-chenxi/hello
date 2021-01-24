@@ -3,4 +3,4 @@ authors = ["yu-chenxi"]
 language = "en"
 multilingual = false
 src = "src"
-title = "hello"
+title = "hello rust"
