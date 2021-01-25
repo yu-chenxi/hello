@@ -1,0 +1,357 @@
+#![allow(dead_code)]
+
+use std::{convert::TryFrom, convert::TryInto, fmt::Debug, mem};
+use std::{f64::consts, fmt};
+
+use fmt::Display;
+fn main() {
+    foo();
+    foo2();
+    foo3();
+}
+
+fn foo() {
+    // positional argument
+    println!("{1}, this is {1}. {1} this is {0}.", "Alice", "Bob");
+    // named argument
+    println!(
+        "{subject} {verb} {object}",
+        object = "the lazy dog",
+        subject = "the quick brown fox",
+        verb = "jumps over"
+    );
+    println!("{number:>0width$}", number = 1, width = 6);
+    println!("Pi is roughtly {:.3}", consts::PI);
+    // {:?} include ""
+    println!(
+        "{1:?} {0:?} is the {actor:?} name.",
+        "Slater",
+        "Christian",
+        actor = "actor's"
+    );
+    foo_2();
+    foo_3();
+}
+
+#[derive(Debug)]
+struct Person<'a> {
+    name: &'a str,
+    age: u8,
+}
+
+struct S(i32);
+
+impl fmt::Display for S {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug)]
+struct Complex {
+    real: f64,
+    imag: f64,
+}
+
+impl Display for Complex {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} + {}i", self.real, self.imag)
+    }
+}
+
+fn foo_2() {
+    let name = "Peter";
+    let age = 27;
+    let peter = Person { name, age };
+    println!("{:#?}", peter);
+    let s = S(5);
+    println!("{}", s);
+    let cplx = Complex {
+        real: 3.3,
+        imag: 7.2,
+    };
+    println!("Display: {}", cplx);
+    println!("Debug: {:?}", cplx);
+    let pair = (1, true);
+    println!("pair is {:?}", pair);
+    println!("one element tuple: {:?}", (5u32,));
+    println!("just a integer: {:?}", (5u32));
+    let v = [1, 2, 3];
+    assert_eq!(v.len() * mem::size_of::<i32>(), mem::size_of_val(&v));
+    println!("{:?}", &v[..=1]);
+}
+
+#[derive(Debug)]
+struct Number {
+    value: i32,
+}
+
+use std::convert::From;
+impl From<i32> for Number {
+    fn from(value: i32) -> Self {
+        Number { value }
+    }
+}
+
+fn foo_3() {
+    let my_str = "hello";
+    let my_string = String::from(my_str); // trait From::from
+    println!("my_string = {:?}", my_string);
+    let num = Number::from(30);
+    println!("My number is {:?}", num);
+    let int = 5;
+    let num: Number = int.into();
+    println!("My number is: {:?}", num);
+}
+
+#[derive(Debug, PartialEq)]
+struct EvenNum(i32);
+
+impl TryFrom<i32> for EvenNum {
+    type Error = ();
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        if value % 2 == 0 {
+            Ok(EvenNum(value))
+        } else {
+            Err(())
+        }
+    }
+}
+
+fn foo2() {
+    println!("{:?}", EvenNum::try_from(8));
+    println!("{:?}", EvenNum::try_from(5));
+    let res: Result<EvenNum, ()> = 8.try_into();
+    assert_eq!(Ok(EvenNum(8)), res);
+    let res: Result<EvenNum, ()> = 5.try_into();
+    assert_eq!(Err(()), res);
+    foo2_2();
+    foo2_3();
+}
+
+use std::string::ToString;
+struct Circle {
+    radius: i32,
+}
+
+impl ToString for Circle {
+    fn to_string(&self) -> String {
+        format!("Circle of radius {:?}", self.radius)
+    }
+}
+
+fn foo2_2() {
+    let circle = Circle { radius: 6 };
+    println!("{}", circle.to_string());
+    let a: i32 = "5".parse().unwrap();
+    let b = "10".parse::<i32>().unwrap();
+    let sum = a + b;
+    println!("Sum: {:?}", sum);
+    let mut i = 1;
+    let res = 'exit: loop {
+        let mut j = 0;
+        loop {
+            if i * i + j * j == 74 {
+                break 'exit (i, j);
+            }
+            j += 1;
+            if j == 10 {
+                break;
+            }
+        }
+        i += 1;
+    };
+    println!("res = {:?}", res);
+}
+
+fn age() -> u32 {
+    15
+}
+
+fn some_number() -> Option<u32> {
+    Some(42)
+}
+
+fn foo2_3() {
+    let refer = &4;
+    match refer {
+        &val => println!("Got a value via destructing: {:?}", val),
+    }
+    println!("Tell me type of person you are");
+    match age() {
+        0 => println!("I'm not born yet I guess."),
+        n @ 1..=12 => println!("I'm a child of age {}", n),
+        n @ 13..=19 => println!("I'm a teen of age {}", n),
+        n => println!("I'm an old person of age {}", n),
+    };
+
+    match some_number() {
+        Some(n @ 42) => println!("The Answer is: {}!", n),
+        Some(n) => println!("Not interesting... {}", n),
+        _ => (),
+    }
+
+    fn bar() -> ! {
+        panic!("This call never returns.");
+    }
+
+    const N: u32 = 10;
+    let mut acc = 0;
+    for i in 1..=10 {
+        acc += match i % 2 == 1 {
+            true => i,         // i32
+            false => continue, // !
+        };
+    }
+    println!("acc = {}", acc);
+}
+
+fn my_div(a: i32, b: i32) -> i32 {
+    if b == 0 {
+        // !
+        panic!("div 0!")
+    } else {
+        // i32
+        a / b
+    }
+}
+
+#[test]
+#[should_panic(expected = "div 0!")]
+fn test_my_div() {
+    assert_eq!(3, my_div(7, 2));
+    assert_eq!(0, my_div(3, 0));
+}
+
+#[test]
+fn t_dummy() {
+    assert_eq!(1, 1);
+}
+
+// cargo test => test_my_div t_dummy
+// cargo test dummy => t_dummy
+// unit test: test a function/struct+methods
+// integration test: test a binary
+
+// compile this fn if your target os is linux
+#[cfg(target_os = "linux")]
+fn are_you_on_linux() {
+    println!("You are running linux!");
+}
+
+#[cfg(not(target_os = "linux"))]
+fn are_you_on_linux() {
+    println!("You are "not" running linux!");
+}
+
+#[derive(Debug)]
+struct GenVal<T> {
+    val: T,
+}
+
+impl<T> GenVal<T> {
+    fn value(&self) -> &T {
+        &self.val
+    }
+}
+
+fn print_debug<T: Debug>(t: &T) {
+    println!("{:?}", t);
+}
+
+trait PrintInOption {
+    fn print_in_option(self);
+}
+
+impl<T> PrintInOption for T
+where
+    Option<T>: Debug,
+{
+    fn print_in_option(self) {
+        println!("{:?}", Some(self));
+    }
+}
+
+struct Container(i32, f32);
+
+trait Containes {
+    type A;
+    type B;
+
+    fn first(&self) -> Self::A;
+    fn last(&self) -> Self::B;
+}
+
+impl Containes for Container {
+    type A = i32;
+    type B = f32;
+
+    fn first(&self) -> Self::A {
+        self.0
+    }
+
+    fn last(&self) -> Self::B {
+        self.1
+    }
+}
+
+fn foo3() {
+    println!("{}", op::prime2(17));
+    are_you_on_linux();
+    let x = GenVal { val: 3 }; // T = i32
+    println!("{}", x.value());
+    print_debug(&x); // T = GenVal
+    let v = vec![1, 2, 3];
+    v.print_in_option();
+    let c = Container { 0: 1, 1: 1.2 };
+    println!("first = {}, last = {}", c.first(), c.last());
+    foo3_2();
+}
+
+#[derive(Clone, Copy)]
+struct Fib {
+    curr: u32,
+    next: u32,
+}
+
+impl Fib {
+    fn new() -> Self {
+        Self { curr: 1, next: 1 }
+    }
+}
+
+impl Iterator for Fib {
+    type Item = u32;
+    fn next(&mut self) -> Option<Self::Item> {
+        let new_next = self.curr + self.next;
+        self.curr = self.next;
+        self.next = new_next;
+        Some(self.curr)
+    }
+}
+
+fn foo3_2() {
+    let fib = Fib::new();
+    for e in fib.take(4) {
+        // the first 4 elements
+        println!("> {}", e);
+    }
+
+    for e in fib.skip(4).take(4) {
+        // skip the first 4 elements
+        // copy
+        println!("> {}", e);
+    }
+    let num = Some(5);
+    // don't have to unbox
+    let num_str = num.map(|n| n.to_string());
+    println!("{:?}", num_str);
+}
+
+// common traits
+// std::convert::From::from
+// std::string::ToString::to_string
+// std::fmt::Display::fmt
+// std::fmt::Debug::fmt
+// std::ops::Drop::drop
