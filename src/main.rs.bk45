@@ -1,49 +1,122 @@
-use std::{
-    cell::RefCell,
-    mem,
-    ptr::swap,
-    rc::{Rc, Weak},
-};
+// #![feature(never_type)]
 
-#[cfg(test)]
-mod my {
-    use super::*;
+use std::{cell::RefCell, fmt::Debug, rc::Rc};
 
-    macro_rules! make_test {
-        ($n:expr) => {
-            (($n as f64).sqrt(), $n)
-        };
-    }
-    #[test]
-    fn test_my_sqrt() {
-        let tests = vec![
-            make_test!(2.0),
-            make_test!(13.0),
-            make_test!(65537.0),
-            make_test!((2 << 28 - 5) as f64),
-        ];
-        for (act, x) in tests {
-            let rt = my_sqrt(x);
-            let diff = (act - rt).abs();
-            assert!(diff < 1e-6);
-        }
-        // Err("unknown error!")
+type NodePtr<T> = Option<Box<Node<T>>>;
+
+struct Node<T: Debug> {
+    data: T,
+    next: NodePtr<T>,
+}
+
+impl<T: Debug> Drop for Node<T> {
+    fn drop(&mut self) {
+        println!("{:?} dropped!", self.data);
     }
 }
 
-fn my_sqrt(x: f64) -> f64 {
-    const N: u32 = 16;
-    let mut rt = x / 2.0;
-    for _ in 0..N {
-        rt = (rt + x / rt) / 2.0;
+impl<T: Debug> Node<T> {
+    fn new(data: T) -> Box<Node<T>> {
+        Box::new(Node { data, next: None })
     }
-    rt
 }
 
 fn foo() {
-    println!("{:.3}", my_sqrt(2.0));
-    println!("{:.3}", my_sqrt(17.0));
-    println!("{:.3}", my_sqrt(65537.0));
+    let mut p1 = Node::new(1);
+    let p2 = Node::new(2);
+    p1.next = Some(p2);
+}
+
+fn foo2() {
+    let mut x = Some(2);
+    let y = x.take(); // replace value with Option::None
+    println!("x = {:?}", x);
+    println!("y = {:?}", y);
+    let mut x = Some(2);
+    let y = x.replace(5);
+    println!("x = {:?}", x);
+    println!("y = {:?}", y);
+}
+
+fn foo3() {
+    let x = Box::new(3);
+    println!("{:p}", x);
+    let s: String = "hello".into();
+    println!("{}", s);
+    let s = "hello".to_owned();
+    println!("{}", &s);
+    // ----------------
+    let v: Vec<()> = vec![(); 3];
+    for e in &v {
+        println!("{:?}", e);
+    }
+    let num: Num = (*x).into();
+    println!("{:?}", num);
+    // enum Void {} // ZST, bottom type
+    // bottom/bang type(!):
+    // 1. panic! std::process::exit
+    // 2. continue break
+    // 3. loop
+    // 4. enum Void{}
+    // unit type(()):
+    // 1. fn f() -> () {}
+    // let res: Result<u32, Void> = Ok(0);
+    // let Ok(num) = res;
+    // println!("{:?}", num);
+    // let x = Some(3);
+    // let Some(x) = x; `None` not covered
+}
+
+use std::convert::From;
+#[derive(Debug)]
+struct Num {
+    n: i32,
+}
+
+impl From<i32> for Num {
+    fn from(n: i32) -> Num {
+        Num { n }
+    }
+}
+
+fn foo4() {
+    // default: Sized
+    fn f<T: Sized>(x: &T) {
+        println!("{:p}", x);
+    }
+    let x = 13;
+    f(&x);
+    f::<i32>(&x); // in decl place
+    fn rev(v: &mut [i32]) {
+        let (mut i, mut j) = (0, v.len() - 1);
+        while i < j {
+            v.swap(i, j);
+            i += 1;
+            j -= 1;
+        }
+    }
+    let mut v = [2, 5, 11, 17, 23];
+    rev(&mut v);
+    println!("{:?}", v);
+
+    #[derive(PartialEq, Debug, Clone, Copy)]
+    struct Pt {
+        x: f64,
+        y: f64,
+    }
+    let box_pt = Box::new(Pt { x: 0.0, y: 0.0 });
+    let unboxed_pt = *box_pt;
+    assert_eq!(Pt { x: 0.0, y: 0.0 }, unboxed_pt); // Debug: panic print
+                                                   // println!("{:?}", box_pt);
+    assert_eq!("Pt { x: 0.0, y: 0.0 }".to_string(), format!("{:?}", box_pt));
+    #[derive(Debug)]
+    struct Color(i32, i32, i32); // tuple struct type(no def Debug)
+    let color = Color(1, 2, 3);
+    println!("{:?}", color);
+    type Pt2 = (i32, i32); // tuple type(have def Debug)
+    let pt: Pt2 = (1, 2); // tuple
+    println!("{:?}", pt);
+    let _color = Color { 0: 1, 1: 2, 2: 3 }; // struct like format
 }
 
 fn main() {
@@ -53,138 +126,153 @@ fn main() {
     foo4();
     foo5();
 }
-// alt-up: move line up
-// alt-down: move line down
-// shift-alt-up: copy line up
-// ctrl-shift-\: {} ()
 
-enum E<'a> {
-    _Move(i32, i32),
-    _Msg(&'a str),
-}
-
-mod my2 {
-    #[derive(Debug)]
-    pub struct Person<'a> {
-        name: &'a str,
-        age: u32,
-    }
-
-    impl<'a> Person<'a> {
-        pub fn new(name: &'a str, age: u32) -> Self {
-            Self { name, age }
-        }
-        pub fn get_name(&self) -> &str {
-            self.name
-        }
-        pub fn set_age(&mut self, age: u32) {
-            self.age = age;
-        }
-    }
-}
-
-use my2::Person;
-
-fn foo2() {
-    println!("{}", mem::size_of::<E>()); // tag + ptr + len = 3 * usize = 24
-    let rname: &str;
-    // {
-    let name = "mike".to_string();
-    rname = &name;
-    // }
-    let mut per = Person::new(&rname, 18);
-    println!("name = {}", per.get_name());
-    per.set_age(20);
-    println!("{:?}", per);
-}
-
-type NodePtr = Option<Rc<RefCell<Node>>>;
-type WNodePtr = Option<Weak<RefCell<Node>>>;
-
-struct Node {
-    data: i32,
-    prev: WNodePtr,
-    next: NodePtr,
-}
-
-impl Drop for Node {
-    fn drop(&mut self) {
-        println!("{} dropped", self.data);
-    }
-}
-
-fn foo3() {
-    // break cyclic ref
-    let p1 = Rc::new(RefCell::new(Node {
-        data: 1,
-        prev: None,
-        next: None,
-    }));
-    let p2 = Rc::new(RefCell::new(Node {
-        data: 2,
-        prev: None,
-        next: None,
-    }));
-    let p3 = Rc::new(RefCell::new(Node {
-        data: 3,
-        prev: None,
-        next: None,
-    }));
-
-    p1.borrow_mut().next = Some(p2.clone());
-    p2.borrow_mut().prev = Some(Rc::downgrade(&p1));
-    p2.borrow_mut().next = Some(p3.clone());
-    p3.borrow_mut().prev = Some(Rc::downgrade(&p1));
-    // Rc:
-    // strong
-    // weak
-    // value: T
-    assert_eq!(1, Rc::strong_count(&p1));
-    assert_eq!(2, Rc::strong_count(&p2));
-    assert_eq!(1, Rc::strong_count(&p1));
-}
-
-fn gcd(mut a: u32, mut b: u32) -> u32 {
-    if a < b {
-        unsafe {
-            swap(&mut a, &mut b);
-        }
-    }
-
-    while b != 0 {
-        let r = a % b;
-        a = b;
-        b = r;
-    }
-    a
-}
-
-#[allow(clippy::many_single_char_names)]
-fn gcd2(a: u32, b: u32) -> u32 {
-    let (mut x, mut y) = if a > b { (a, b) } else { (b, a) };
-    while y != 0 {
-        let r = x % y;
-        x = y;
-        y = r;
-    }
-    x
-}
-
-fn foo4() {
-    assert_eq!(3, gcd(12, 15));
-    assert_eq!(7, gcd(21, 7));
-    assert_eq!(6, gcd(24, 18));
-    assert_eq!(1, gcd(7, 37));
-    // -----------------------
-    assert_eq!(3, gcd2(12, 15));
-    assert_eq!(7, gcd2(21, 7));
-    assert_eq!(6, gcd2(24, 18));
-    assert_eq!(1, gcd2(7, 37));
-}
+// turbofish ::<T>
+// Vec<_> type
+// type annotations
+// box, unbox
 
 fn foo5() {
-    let mut x = 3;
-    let y = 5;
-    let prev_x = mem::replace(&mut x, y);
-    println!("x = {}, previous x value = {}", x, prev_x);
+    // New Type
+    struct Integer(u32);
+    type Int = i32;
+
+    let int = Integer(10); // newtype is Integer
+    assert_eq!(10, int.0);
+    let int: Int = 10;
+    assert_eq!(10, int);
+
+    #[derive(Debug)]
+    struct Empty;
+    let x = Empty;
+    println!("{:p}", &x);
+    let y = x;
+    println!("{:p}", &y);
+    let z = Empty;
+    println!("{:p}", &z); // --debug &x != &y != &z
+    println!("{:?}", (1..=3)); // --release &x == &y == &z
+    println!("{:?}", std::ops::RangeFull);
+
+    #[allow(dead_code)]
+    #[derive(Debug, Clone, Copy)]
+    enum Number {
+        One = 1, // inc
+        Two,
+        Three,
+    }
+
+    use Number::*;
+    let a = Two;
+    println!("a = {:?}/{}", a, Number::Two as usize);
+    match a {
+        One => println!("0"),
+        Two => println!("1"),
+        Three => println!("2"),
+    };
+
+    #[derive(Debug)]
+    enum IpAddr {
+        V4(u8, u8, u8, u8),
+        V6(String),
+    }
+    let x: fn(u8, u8, u8, u8) -> IpAddr = IpAddr::V4;
+    let y: fn(String) -> IpAddr = IpAddr::V6;
+    println!("{:p}", x);
+    println!("{:p}", y);
+
+    let home = x(127, 0, 0, 1);
+    println!("{:?}", home);
+
+    let s = Some(42);
+    let _num = s.unwrap();
+    match s {
+        Some(n) => println!("num is: {}", n), // ()
+        None => (),
+    };
+
+    let s = Some("hello".to_string());
+    match s {
+        Some(ref s) => println!("{:?}", s), // s == &s.unwrap() (not moved)
+        _ => (),
+    };
+    println!("{:?}", s);
+    // 10!
+    println!("10! = {}", (1..=10).fold(1, |s, e| s * e));
+    #[derive(Debug)]
+    struct Pt {
+        x: i32,
+        y: i32,
+    }
+
+    let mut pt = Pt { x: 2, y: 3 };
+    let Pt {
+        y: ref mut ry,
+        x: ref mut rx,
+    } = pt;
+    *ry = 1;
+    *rx = 2;
+    println!("{:?}", pt);
+    let x = Box::new(20);
+    let tx = &*x as *const i32;
+    let px = tx as *mut i32;
+    unsafe {
+        *px = 13;
+    }
+    println!("{:p} {:p} {}", x, px, *x); // Deref
+                                         // let x = Box::new("hello");
+    let x = Box::new("hello".to_owned());
+    // Box<&str>
+    // payload = len
+    use std::mem::{size_of, size_of_val};
+    assert_eq!(size_of::<usize>(), size_of_val(&x));
+    assert_eq!(size_of::<usize>() * 2, size_of::<Box<str>>());
+    assert_eq!(size_of::<usize>() * 2, size_of::<Box<[i32]>>());
+    let s = *x; // deref move
+    println!("{:?}", s);
+    let s = Rc::new(RefCell::new("hello".to_owned()));
+    // let s2 = *s; do not support deref move
+    let mut rs = s.borrow_mut();
+    *rs = "rust".to_owned();
+    assert_eq!(size_of::<usize>() * 2, size_of_val(&rs)); // borrow(modify in drop), value
+                                                          // strng + weak + value
+    println!("{:?}", s);
+    // DerefMut
+    // RefMut
+    // let mut _0 = 5;
+    // let x = &mut _0;
+    let x = &mut 5;
+    *x = 3;
+    println!("{}", x);
+    let mut x = 0;
+    let ref mut rx = x;
+    *rx = 11;
+    println!("{}", x);
+    let s = (1..=3).zip(4..=6).fold(0, |s, p| s + p.0 * p.1);
+    println!("s = {}", s); // 4 + 10 + 18 = 32
+    let s = (1..=5).skip(2).take(3).sum::<i32>(); // 12
+    println!("s = {}", s);
+    fn cube(n: i32) -> i32 {
+        n * n * n
+    }
+
+    fn judge(n: i32) -> bool {
+        let a = n / 100;
+        let b = n / 10 % 10;
+        let c = n % 10;
+        cube(a) + cube(b) + cube(c) == n
+    }
+
+    let v = (100..=999)
+        .filter(|n| -> bool { judge(*n) })
+        .collect::<Vec<i32>>();
+    println!("v = {:?}", v);
+    let a = String::from("peter");
+    println!("{:?}", a.cmp(&"other".to_string()));
 }
+
+// TS: ST
+// Arc -> Rc
+// RwLock -> RefCell
+// Atomic -> Cell
+// Copy: = clone
+// no Copy: = `move`

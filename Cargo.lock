@@ -3,3 +3,11 @@
 [[package]]
 name = "hello"
 version = "0.1.1"
+dependencies = [
+ "op",
+]
+
+[[package]]
+name = "op"
+version = "0.1.1"
+source = "git+https://github.com/yu-chenxi/op#0c56519a81193e20ba955ac5720477539823f042"
