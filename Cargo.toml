@@ -12,7 +12,8 @@ edition = "2018"
 # rayon = "1.5.0"
 # bumpalo = "3.4.0"
 # op = {version = "0.1.0", path = "../op"}
-op = {version = "0.1.0", git = "https://github.com/yu-chenxi/op"}
+# op = {version = "0.1.0", git = "https://github.com/yu-chenxi/op"}
+rust-crypto = "0.2.36"
 
 [profile.release]
 lto = true

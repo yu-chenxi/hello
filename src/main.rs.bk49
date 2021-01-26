@@ -1,4 +1,4 @@
-d#[derive(Clone, Copy)]
+#[derive(Clone, Copy)]
 struct Fib {
     f1: u32,
     f2: u32,

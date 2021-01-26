@@ -117,3 +117,5 @@ volume: /drone/src/target:/root/drone/target
 // 如果一个类型T实现了Deref<Target=U>, 则该类型T的引用(或智能指针)在应用的时候会自动转换为类型U
 // 单态化: monomorphization
 // 代码膨胀: code blo
+// iterator adaptor
+// wrapper design pattern
