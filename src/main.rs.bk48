@@ -1,0 +1,209 @@
+use std::{
+    cell::{Cell, RefCell},
+    mem,
+    rc::Rc,
+    sync::atomic::AtomicU32,
+    time::SystemTime,
+};
+
+fn main() {
+    foo();
+}
+
+fn foo() {
+    let start = SystemTime::now();
+    {
+        let nums = (100u32..=999)
+            .filter(|n| {
+                let cube = |n| n * n * n;
+                let (a, b, c) = (n / 100u32, n / 10u32 % 10u32, n % 10u32);
+                cube(a) + cube(b) + cube(c) == *n
+            })
+            .collect::<Vec<u32>>();
+        println!("{} = {:?}", stringify!(nums), nums);
+    }
+    let elapse = start.elapsed().unwrap();
+    println!("{} = {:?}", stringify!(elapse), elapse);
+    foo_2();
+    foo_3();
+    foo_4();
+    foo_5();
+}
+
+fn inc_n(counter: &mut AtomicU32) {
+    const N: u32 = 1000;
+    for _ in 0..N {
+        counter.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
+fn foo_2() {
+    let mut counter = AtomicU32::new(0);
+    inc_n(&mut counter);
+    println!("{} = {:?}", stringify!(counter), counter);
+    // -------------------------------------------------
+    let peter = "Peter".to_string();
+    let john = "John".to_string(); // ToString::to_string
+                                   // 1. Cell
+    let name = Cell::new(peter.clone());
+    // let name2 = name.get(); // 1. trait bounds were not satisfied: `String: Copy`
+    name.set(john.clone());
+    // println!("{} = {:?}", stringify!(name), name); // reason: like 1
+
+    // 2. RefCell
+    let name = RefCell::new(peter.clone());
+    let _name2 = name.borrow().clone();
+    *name.borrow_mut() = john.clone();
+    println!("{} = {:?}", stringify!(name), name);
+}
+
+fn foo_3() {
+    #[derive(Debug)]
+    enum IpAddr {
+        V4(u8, u8, u8, u8),
+        V6(String),
+    }
+
+    type Tv4 = fn(u8, u8, u8, u8) -> IpAddr;
+    type Tv6 = fn(String) -> IpAddr;
+
+    let fv4: Tv4 = IpAddr::V4;
+    let fv6: Tv6 = IpAddr::V6;
+    println!("{} = {:p}", stringify!(fv4), fv4);
+    println!("{} = {:p}", stringify!(fv6), fv6);
+    println!("localhost(v4) = {:?}", fv4(127, 0, 0, 1));
+    println!("localhost(v6) = {:?}", fv6(":::1".to_string()));
+}
+
+struct Node {
+    data: i32,
+    next: NodePtr,
+}
+
+type NodePtr = Option<Box<Node>>;
+
+struct Stack {
+    head: NodePtr,
+}
+
+// you can modify ref.xx
+// but you can't move out ref.xx
+impl Stack {
+    fn new() -> Self {
+        Self { head: None }
+    }
+
+    fn push(&mut self, data: i32) {
+        let pn = Box::new(Node {
+            data,
+            next: mem::replace(&mut self.head, None),
+        });
+        self.head = Some(pn);
+    }
+
+    fn pop(&mut self) -> Option<i32> {
+        let first = mem::replace(&mut self.head, None);
+        match first {
+            None => None,
+            Some(f) => {
+                self.head = f.next;
+                Some(f.data)
+            }
+        }
+    }
+}
+
+fn foo_4() {
+    let mut st = Stack::new();
+    st.push(1);
+    st.push(2);
+    st.push(3);
+    while let Some(data) = st.pop() {
+        println!("{}", data);
+    }
+}
+
+unsafe fn my_swap(x: *mut i32, y: *mut i32) {
+    {
+        let t = *x;
+        *x = *y;
+        *y = t;
+    }
+}
+
+fn foo_5() {
+    let mut x = 2;
+    let mut y = 3;
+    unsafe {
+        // call unsafe fn in unsafe block/unsafe fn
+        my_swap(&mut x as *mut i32, &mut y as *mut i32);
+    }
+    println!("x = {}, y = {}", x, y);
+    let x = Box::new(3);
+    // as_ref/as_mut
+    let px = x.as_ref() as *const i32;
+    let px = px as *mut i32;
+    unsafe {
+        *px = 5;
+    }
+    println!("x = {}", x);
+    let y = Rc::new(3);
+    let py = y.as_ref() as *const i32;
+    let py = py as *mut i32;
+    unsafe {
+        *py = 5;
+    }
+    println!("y = {}", y);
+    let py = py as *const i32;
+    unsafe {
+        println!("y = {}", *py);
+    }
+    let mut _v = vec![1, 2, 3];
+    {
+        _v
+    };
+    // v.push(4);
+    // #[derive(Clone, Copy)]
+    // Copy not allowed on types with destructors
+
+    #[derive(Clone)]
+    struct S(u32);
+    impl Drop for S {
+        fn drop(&mut self) {
+            println!("{} dropped.", self.0);
+        }
+    }
+    let _s1 = S(1);
+    let s2 = S(2);
+    {
+        s2
+    };
+}
+
+/*
+pointer:
+1. reference
+&T
+&mut T
+
+2. raw pointer
+*const T
+*mut T
+=>
+*const T as *mut T
+*mut T as *const T
+
+3. smart pointer
+Box<T>(as_ref/as_mut)
+Rc<T>/Arc<T>(as_ref, <shared read>)
+
+traits: Deref(*)/Drop
+#[lang = "drop"]
+String & Vec are also smart pointers
+drop-flag: move
+
+memory leak
+1. thread panic
+2. cyclic ref
+3. forget
+*/
