@@ -13,7 +13,8 @@ edition = "2018"
 # bumpalo = "3.4.0"
 # op = {version = "0.1.0", path = "../op"}
 # op = {version = "0.1.0", git = "https://github.com/yu-chenxi/op"}
-rust-crypto = "0.2.36"
+# rust-crypto = "0.2.36"
+# itertools = "0.10.0"
 
 [profile.release]
 lto = true
