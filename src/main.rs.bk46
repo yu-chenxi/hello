@@ -1,248 +1,199 @@
-use std::{
-    cell::{Cell, RefCell},
-    mem,
-};
+use std::ops::Deref;
 
-trait Eat {
-    fn eat(&self);
-}
+mod my {
+    use std::rc::Rc;
+    use std::{cell::RefCell, fmt::Debug};
 
-// interface inhert
-// two methods
-// fn eat(&self);
-// fn mov(&self);
-trait Move: Eat {
-    fn mov(&self);
-}
+    type NodePtr<U> = Rc<RefCell<Node<U>>>;
 
-struct Dog;
+    struct Node<T: Debug> {
+        data: T,
+        next: Option<NodePtr<T>>,
+    }
 
-impl Eat for Dog {
-    fn eat(&self) {
-        println!("Dogs eat bones.")
+    impl<T: Debug> Node<T> {
+        fn new(data: T) -> NodePtr<T> {
+            Rc::new(RefCell::new(Node { data, next: None }))
+        }
+    }
+
+    impl<T: Debug> Drop for Node<T> {
+        fn drop(&mut self) {
+            println!("drop {:?}", self.data);
+        }
+    }
+
+    pub fn foo() {
+        let p1 = Node::new(1);
+        let p2 = Node::new(2);
+        p1.borrow_mut().next = Some(p2.clone());
+        // Defer
+        // p1.deref() type == &RefCell<Node<i32>>
+        // p2.borrow_mut().next = Some(p1.clone());
     }
 }
 
-impl Move for Dog {
-    fn mov(&self) {
-        println!("Dogs can run.");
+mod my2 {
+    use std::{fmt::Debug, mem};
+
+    struct Stack<T: Debug> {
+        head: Option<NodePtr<T>>,
+    }
+
+    type NodePtr<U> = Box<Node<U>>;
+    struct Node<T> {
+        data: T,
+        next: Option<NodePtr<T>>,
+    }
+
+    impl<T: Debug> Stack<T> {
+        fn new() -> Self {
+            Self { head: None }
+        }
+
+        fn push(&mut self, data: T) {
+            let pn = Box::new(Node {
+                data,
+                next: mem::replace(&mut self.head, None),
+            });
+            self.head = Some(pn);
+        }
+
+        fn pop(&mut self) -> Option<T> {
+            match mem::replace(&mut self.head, None) {
+                Some(pn) => {
+                    self.head = pn.next;
+                    Some(pn.data)
+                }
+                None => None,
+            }
+        }
+    }
+
+    pub fn foo() {
+        let mut st = Stack::new();
+        st.push(1);
+        st.push(2);
+        st.push(3);
+        while let Some(data) = st.pop() {
+            println!("{}", data);
+        }
     }
 }
 
-struct Cat;
-
-impl Eat for Cat {
-    fn eat(&self) {
-        println!("Cats eat fishes.");
-    }
+#[derive(Debug)]
+struct Person<'a> {
+    name: &'a str,
+    age: &'a u32,
 }
 
-impl Move for Cat {
-    fn mov(&self) {
-        println!("Cats can climb.")
+enum Num {
+    Byte(u8),
+    Short(u16),
+}
+
+impl From<Num> for u32 {
+    fn from(num: Num) -> Self {
+        match num {
+            Num::Byte(b) => b as u32,
+            Num::Short(s) => s as u32,
+        }
     }
 }
 
 fn foo() {
-    let dog = Dog;
-    let cat = Cat;
-    fn dyn_disp(e: &dyn Eat) {
-        e.eat();
+    let name = "Peter".to_string();
+    let per = Person {
+        name: &name,
+        age: &18,
+    };
+    println!("{:#?}", per);
+
+    use std::mem;
+    println!("{}", mem::size_of::<Num>());
+    let x = Num::Byte(13);
+    let y = Num::Short(65535);
+    let x: u32 = x.into();
+    let y: u32 = y.into();
+    println!("{}", x + y);
+    let s = Some(name);
+    match s {
+        Some(ref s) => println!("{:?}", s),
+        None => (),
     }
-    fn dyn_disp2(m: &dyn Move) {
-        m.mov();
-    }
-    // call it!
-    dyn_disp(&dog);
-    dyn_disp(&cat);
-    dyn_disp2(&dog);
-    dyn_disp2(&cat);
+    foo_2();
+    foo_3();
 }
 
-/// # fac
-///
-/// * get the value of `n`!
-///
-const fn fac(n: u32) -> u32 {
-    let mut s = 1;
-    let mut i = 2;
-    while i <= n {
-        s *= i;
-        i += 1;
-    }
-    s
+fn bar(v: &mut [i32; 3]) {
+    v[0] = 3
+    // ref v dropped
+    // give back owership
 }
+
+// fn join(s: &String) {
+//     let _s = *s; move out
+// }
+
+fn foo_2() {
+    let mut v = [1, 2, 3];
+    bar(&mut v);
+    assert_eq!([3, 2, 3], v);
+    let s = Box::new("hello".to_string()); // Box<T> has owership
+    let _s = *s; // *(s.deref())
+    let s = "rust".to_string();
+    let rs: &str = &s;
+    let s2 = rs.to_owned(); // create String from &str
+    assert_ne!(s.as_ptr(), s2.as_ptr());
+    // &String -> &str
+    // &Vec<T> -> &[T]
+}
+
+fn foo_3() {
+    let s = Box::new("faker".to_string());
+    let s2 = (&s).to_uppercase(); // => Box::deref(&s).to_uppercase()
+                                  // => &String.to_uppercase()
+    println!("{:?}", s2);
+}
+
+struct Integer {
+    n: i32,
+}
+
+// deref trait
+impl Deref for Integer {
+    type Target = i32;
+
+    fn deref(&self) -> &Self::Target {
+        &self.n
+    }
+}
+
+use std::rc::Rc;
 
 fn foo2() {
-    const N: u32 = 10;
-    println!("fac({}) = {}", N, fac(N));
-    foo2_2();
+    let int = Integer { n: 11 };
+    let _n = *int;
+    let res = int.pow(2); // (*int.deref()).pow(2)
+    println!("res = {:?}", res);
+    let s = Rc::new("deref".to_string());
+    let _s2 = s.clone();
+    let _s3 = (*s).clone(); // *s.deref() type String == String
 }
 
-fn foo2_2() {
-    let mut i = 0;
-    let res = loop {
-        if i * i + 1 == 10 {
-            break i;
-        }
-        i += 1;
-    };
-    println!("res = {}", res);
-    println!(
-        "{}",
-        stringify!(
-            let mut _x  = 1;
-            _x += 1;
-        )
-    );
-}
-
-fn foo3() {
-    let c = '🦀';
-    println!("{}", c);
-    println!("U+{:X}", c as u32); // unicode scalar
-    let mut buf = [0u8; 4];
-    c.encode_utf8(&mut buf);
-    println!("{:?}", buf); // utf-8 code point
-    let x = 3;
-    let y = 2;
-    foo3_2(x, y).unwrap();
-}
-
-fn my_div(x: i32, y: i32) -> Option<i32> {
-    if y == 0 {
-        None
-    } else {
-        Some(x / y)
-    }
-}
-
-fn foo3_2(x: i32, y: i32) -> Option<i32> {
-    // let res = expr?;
-    // None | Ok => return it
-    // Some(res) | Err(res) => res
-    // let res = match my_div(x, y) {
-    //     None => return None,
-    //     Some(res) => res,
-    // };
-    // upper <=> lower
-    let res = my_div(x, y)?;
-    println!("{} / {} = {}", x, y, res);
-    Some(0)
-}
-
-// cloure traits
-// Fn::call
-// FnMut::call_mut
-// FnOne::call_once
-// struct: (and)
-// enum: sum type(or)
-// fat ptr = ptr + payload
-fn hello(name: String) -> impl Fn() {
-    // type that impl trait Fn
-    move || println!("hello {}.", name)
-}
-
-#[derive(Debug, Default, Clone)]
-struct S {
-    x: RefCell<u32>,
-    y: Cell<u32>,
-}
-
-fn foo4() {
-    let h = hello("mike".to_string());
-    h();
-    let s = S::default();
-    println!("s = {:?}", s);
-    let mut r = s.x.borrow_mut(); // RefMut {value, borrow}
-    *r = 2;
-    s.y.set(3);
-    println!("s = {:?}", s);
-    let mut langs = vec![
-        String::from("rust"),
-        String::from("go"),
-        String::from("kotlin"),
-    ];
-    for lang in &mut langs {
-        // => langs.into_iter()
-        // struct IntoIter{buf -> String, cap, ptr, end}
-        // takes owership
-        //
-        // & => langs.iter()
-        // struct Iter{ptr, end}
-        // ref
-        //
-        // &mut => langs.iter_mut()
-        // struct IterMut{ptr, end}
-        // ref
-        //
-        println!("{}", lang);
-        if lang == "kotlin" {
-            *lang = "wasm".to_string();
-        }
-    }
-    println!("{:?}", langs);
-    let into_it = langs.into_iter();
-    assert_eq!(4 * mem::size_of::<usize>(), mem::size_of_val(&into_it));
-
-    let v = [1, 2, 3];
-    let mut it = v.iter();
-    while let Some(e) = it.next() {
-        println!("{}", e);
-    }
-    assert_eq!(2 * mem::size_of::<usize>(), mem::size_of_val(&it));
-}
-
-// phantom: a. 虚幻的
 fn main() {
+    my::foo();
+    my2::foo();
     foo();
     foo2();
-    foo3();
-    foo4();
-    foo5();
 }
 
-fn fn_<F: Fn()>(f: F) {
-    f();
-}
-
-// generic type
-fn fn_mut<F: FnMut()>(mut f: F) {
-    f();
-}
-
-fn fn_once<F: FnOnce()>(f: F) {
-    f();
-}
-
-fn foo5() {
-    let mut x = 2;
-    let f = || {
-        // FnMut
-        x += 1;
-    };
-    fn_mut(f);
-    // fn_once(f);
-    let f2 = || {
-        // Fn
-        println!("cloure x = {}", x);
-    };
-    fn_(f2);
-    fn_mut(f2);
-    fn_once(f2);
-
-    let mut s = "hello".to_string();
-    let f3 = || {
-        s.clear();
-    };
-    fn_mut(f3);
-    println!("x = {}", x);
-}
-
-// ZST: zero sized type
-// DST: dynamic sized type
-// Fn: FnMut: FnOnce
-// f: FnOnce, also accept Fn, FnMut, FnOnce
-// f: FnMut, also accept Fn, FnMut
-// fn impl Fn
-// Fn > FnMut > FnOnce
+// tagged union
+// tag size = 1byte
+// five traits
+// 1. Sized
+// 2. Unsized
+// 3. Copy
+// 4. Send
+// 5. Sync(shared ref)
+// Copy: Clone
