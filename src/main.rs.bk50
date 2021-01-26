@@ -1,0 +1,102 @@
+d#[derive(Clone, Copy)]
+struct Fib {
+    f1: u32,
+    f2: u32,
+}
+
+impl Fib {
+    fn new() -> Self {
+        Self { f1: 0, f2: 1 }
+    }
+}
+
+impl Iterator for Fib {
+    type Item = u32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let s = self.f1 + self.f2;
+        self.f1 = self.f2;
+        self.f2 = s;
+        Some(self.f1)
+    }
+}
+
+fn foo() {
+    let mut fib = Fib::new();
+    let fibs = fib.take(10).collect::<Vec<u32>>();
+    println!("{:?}", fibs);
+    println!("{:?}", fib.nth(5));
+    println!("{:?}", fib.next());
+}
+
+// actor model
+// CSP model, process = thread
+
+use std::sync::mpsc::channel;
+use std::thread;
+use std::time::Duration;
+
+#[allow(dead_code)]
+fn foo2() {
+    // async channel
+    // sync channel
+    // same: FIFO
+    // diff:
+    // 1. async: no buffer size
+    // 2. sync: buffer size, when buffer is full, sender thread will hang
+    // spsc: single producer single consumer
+
+    // multi-producer thread
+    let (tx, rx) = channel();
+    const N: u32 = 3;
+    for i in 0..N {
+        let tx = tx.clone();
+        thread::spawn(move || {
+            println!("send: {}", i);
+            tx.send(i).unwrap();
+            thread::sleep(Duration::from_millis(10));
+        });
+    }
+
+    // single consumer
+    for m in rx {
+        // deadlock
+        println!("recv: {}", m);
+        thread::sleep(Duration::from_millis(10));
+    }
+}
+
+fn foo3() {
+    let (tx, rx) = channel();
+    thread::spawn(move || {
+        // tx moved to closure
+        for i in 0..3 {
+            tx.send(i).unwrap();
+        }
+        // tx dropped in spawn
+    });
+
+    for i in rx {
+        println!("{}", i);
+    }
+}
+
+// mutex{lock*, poisoned, T}
+// JoinHandle<closure return type>
+fn foo4() {
+    // send data across threads
+    let h = thread::spawn(|| -> Vec<u32> {
+        let fib = Fib::new();
+        fib.take(10).collect::<Vec<u32>>()
+    });
+    println!("wait result...");
+    let res = h.join().unwrap();
+    println!("{:?}", res);
+}
+
+fn main() {
+    foo();
+    // foo2();
+    foo3();
+    foo4();
+}
