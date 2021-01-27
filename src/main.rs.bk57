@@ -1,0 +1,212 @@
+use std::{
+    cell::RefCell,
+    collections::HashMap,
+    mem::{size_of_val, swap},
+    rc::Rc,
+    sync::mpsc::channel,
+    thread::spawn,
+};
+
+fn foo() {
+    let n = 3;
+    let c = |x: i32| x + n; // ref
+    assert_eq!(size_of_val(&c), 8);
+    let c2 = move |x: i32| x + n;
+    assert_eq!(size_of_val(&c2), 4);
+    let s = "hello".to_owned();
+    let c3 = || s + " rust."; // move
+    assert_eq!(size_of_val(&c3), 24);
+    let mut s = "hello".to_owned();
+    let c4 = || s.push_str(" rust"); // move
+    assert_eq!(size_of_val(&c4), 8); // ref
+}
+
+fn foo2() {
+    type Ptr<T> = Option<Box<T>>;
+    type PI32 = Ptr<i32>;
+    // rust null ptr
+    let px: PI32 = None;
+    let mut px2 = Some(Box::new(3));
+    assert_eq!(px.is_none(), true);
+    let px = px2.take();
+    assert_eq!(px2.is_none(), true);
+    assert_eq!(*px.unwrap(), 3);
+}
+
+fn foo3() {
+    for i in (3..).step_by(2) {
+        if i * i == 121 {
+            assert_eq!(i, 11);
+            break;
+        }
+    }
+    let mut v = vec![2, 5, 7, 11, 17, 23];
+    v.remove(1);
+    assert_eq!(v, [2, 7, 11, 17, 23]); // right: [i32; 4]
+    assert_eq!(v.get(2), Some(&11));
+    fn gcd(mut x: u32, mut y: u32) -> u32 {
+        if x < y {
+            swap(&mut x, &mut y);
+        }
+
+        while y != 0 {
+            let t = x % y;
+            x = y;
+            y = t;
+        }
+        x
+    }
+    assert_eq!(gcd(7, 37), 1);
+    assert_eq!(gcd(12, 3), 3);
+    assert_eq!(gcd(12, 20), 4);
+    assert_eq!(gcd(99, 22), 11);
+    fn sort(v: &mut [i32]) {
+        let n = v.len();
+        for i in 1..n {
+            let t = v[i];
+            let mut j = i - 1;
+            while j != 0 && v[j] > t {
+                v[j + 1] = v[j];
+                j -= 1;
+            }
+            if j == 0 && v[0] > t {
+                v[1] = v[0];
+                v[0] = t;
+            } else {
+                v[j + 1] = t;
+            }
+        }
+    }
+    let mut v = [3, 0, -10, 99, 21];
+    sort(&mut v);
+    assert_eq!(v, [-10, 0, 3, 21, 99]);
+    // overflow
+    // let mut n = 0u32;
+    // n -= 1;
+    let s = " hello, rust!";
+    let s = s.trim();
+    assert_eq!(s, "hello, rust!");
+    let mut ss = s.split(',');
+    assert_eq!(ss.next(), Some("hello"));
+    assert_eq!(ss.next(), Some(" rust!"));
+    assert_eq!(s.find("us"), Some(8));
+    assert_eq!(s.find("tx"), None);
+}
+
+#[derive(Clone, Copy)]
+enum Time {
+    Hour(u8),
+    Min(u8),
+    Sec(u16),
+}
+
+use Time::*;
+impl Time {
+    fn to_secs(self) -> u32 {
+        match self {
+            Hour(h) => h as u32 * 3600,
+            Min(m) => m as u32 * 60,
+            Sec(s) => s as u32,
+        }
+    }
+}
+
+fn foo4() {
+    let h = Hour(1);
+    let m = Min(2);
+    let s = Sec(15);
+    let secs = h.to_secs() + m.to_secs() + s.to_secs();
+    assert_eq!(secs, 3735);
+    let v = vec![1, 2, 3];
+    let mut it = v.iter();
+    assert_eq!(it.size_hint(), (3, Some(3)));
+    it.next();
+    assert_eq!(it.size_hint(), (2, Some(2)));
+    it.next();
+    it.next();
+    it.next();
+    assert_eq!(it.size_hint(), (0, Some(0)));
+}
+
+fn foo5() {
+    // CSP mode
+    let (tx, rx) = channel();
+    let h_set = spawn(move || {
+        let mut hm = HashMap::new();
+        hm.insert("chinese".to_string(), 60);
+        hm.insert("math".to_string(), 95);
+        hm.insert("english".to_string(), 90);
+        tx.send(hm).unwrap();
+    });
+
+    let h_get = spawn(move || {
+        let hm = rx.recv().unwrap();
+        // for (subj, score) in &hm {
+        //     println!("{:?} = {}", subj, score);
+        // }
+        println!("{:#?}", hm);
+    });
+
+    h_set.join().unwrap();
+    h_get.join().unwrap();
+}
+
+fn foo6() {
+    let mut v = vec![1, 2, 4];
+    v.push(5);
+    assert_eq!(v, [1, 2, 4, 5]);
+    v.insert(2, 3);
+    assert_eq!(v, [1, 2, 3, 4, 5]);
+    assert!(v.contains(&3)); // predicate assert
+    let s = &v[1..4];
+    assert_eq!(s, [2, 3, 4]);
+    let s = s.to_owned();
+    assert_eq!(s, [2, 3, 4]);
+    let x: i32 = 0b_1001_1101; // popcnt
+    assert_eq!(x.count_ones(), 5);
+}
+
+type PNode = Rc<RefCell<Node>>;
+#[allow(dead_code)]
+struct Node {
+    val: i32,
+    next: Option<PNode>,
+}
+
+impl Node {
+    fn new(val: i32) -> PNode {
+        Rc::new(RefCell::new(Node { val, next: None }))
+    }
+}
+
+fn foo7() {
+    let p1 = Node::new(1);
+    let p2 = Node::new(2);
+    // mem leak
+    p1.borrow_mut().next = Some(p2.clone());
+    p2.borrow_mut().next = Some(p1.clone());
+}
+
+#[derive(Debug, PartialEq)]
+struct Pt {
+    x: i32,
+    y: i32,
+}
+
+fn foo8() {
+    let mut pt = Some(Pt { x: 1, y: 2 });
+    let ry = pt.as_mut().map(|p| &mut p.y);
+    *ry.unwrap() = 3;
+    assert_eq!(pt, Some(Pt { x: 1, y: 3 }));
+}
+
+fn main() {
+    foo();
+    foo2();
+    foo3();
+    foo4();
+    foo5();
+    foo6();
+    foo7();
+    foo8();
+}

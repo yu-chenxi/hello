@@ -116,6 +116,12 @@ volume: /drone/src/target:/root/drone/target
 // Rust中的隐式类型转换: 自动解引用
 // 如果一个类型T实现了Deref<Target=U>, 则该类型T的引用(或智能指针)在应用的时候会自动转换为类型U
 // 单态化: monomorphization
-// 代码膨胀: code blo
+// 代码膨胀: code bloat
 // iterator adaptor
 // wrapper design pattern
+// 竞态条件(race condition): 当某个计算的正确性取决于多个线程交替执行的顺序时, 就会产生竞态条件
+// 1. read-modify-write
+// g_cnt += 1;
+// 2. check-then-act
+// if flag g_cnt += 1;
+// 数据竞争(data race):
