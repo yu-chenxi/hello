@@ -15,12 +15,12 @@ edition = "2018"
 # op = {version = "0.1.0", git = "https://github.com/yu-chenxi/op"}
 # rust-crypto = "0.2.36"
 # itertools = "0.10.0"
-mimalloc = { version = "0.1.22", default-features = false }
+# mimalloc = { version = "0.1.22", default-features = false }
 
 [profile.release]
-# lto = true
-# codegen-units = 1
-# panic ='abort'
+lto = true
+codegen-units = 1
+panic ='abort'
 debug = true
 
 [[bin]]

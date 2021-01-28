@@ -125,3 +125,6 @@ volume: /drone/src/target:/root/drone/target
 // 2. check-then-act
 // if flag g_cnt += 1;
 // 数据竞争(data race):
+// practically ad. 实际上
+// practically without changing any code: 实际上不用改变任何代码
+// tweak: v. 轻微调整
