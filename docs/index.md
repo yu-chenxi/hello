@@ -23,7 +23,7 @@ fn main() {
 
 ---
 
-[yes](/wallet.jpg) 
+![yes](/wallet.jpg) 
 
 - *start*
 - run
@@ -33,7 +33,7 @@ fn main() {
 
 3<sup>*4*</sup>&nbsp;&nbsp;&nbsp;is = 81
 
-good ??
+good 😘😂 
 
 **task mgr**: <kbd>Ctrl</kbd>&nbsp;<kbd>+</kbd>&nbsp;<kbd>Space</kbd>
 
