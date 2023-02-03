@@ -33,7 +33,7 @@ fn main() {
 
 3<sup>*4*</sup>&nbsp;&nbsp;&nbsp;is = 81
 
-good :+1: :smile:
+good ??
 
 **task mgr**: <kbd>Ctrl</kbd>&nbsp;<kbd>+</kbd>&nbsp;<kbd>Space</kbd>
 
