@@ -16,6 +16,11 @@ fn main() {
 <hr>
 
 <img src="https://ycx.life/img/wallet.jpg" alt="alipay"/>
+
+- *start*
+- run
+- stop
+
 **A**<sub>12</sub> is negative
 
 3<sup>*4*</sup>&nbsp;&nbsp;&nbsp;is = 81
