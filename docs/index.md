@@ -14,6 +14,8 @@ fn main() {
 }
 ```
 
+**A**<sub>12</sub> is negative
+
 Here is a simple footnote[^1]
 
 [^1]: [My reference](https://www.wikipedia.org)
