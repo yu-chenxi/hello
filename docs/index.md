@@ -16,12 +16,12 @@ fn main() {
 
 **A**<sub>12</sub> is negative
 
-3<sup>*4*</sup>   is = 81
+3<sup>*4*</sup>&nbsp;&nbsp;&nbsp;is = 81
 
 good :+1: :smile:
+
+**task mgr**: <kbd>Ctrl</kbd><kbd>+</kbd><kbd>Space</kbd>
 
 Here is a simple footnote[^1]
 
 [^1]: [My reference](https://www.wikipedia.org)
-
-
