@@ -19,7 +19,11 @@ fn main() {
 > block1
 >> nest block1-1
 
-<img src="/wallet.jpg" alt="alipay" width="200" height="200"/>
+<img src="/wallet.jpg" alt="alipay" width="300" height="300"/>
+
+---
+
+[yes](/wallet.jpg) 
 
 - *start*
 - run
