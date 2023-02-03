@@ -16,4 +16,6 @@ fn main() {
 
 Here is a simple footnote[^1]
 
-[^1]: My reference
+[^1]: [My reference](https://www.wikipedia.org)
+
+
