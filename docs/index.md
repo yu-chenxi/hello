@@ -31,6 +31,9 @@ good :+1: :smile:
 &nbsp;&nbsp;*I really like<br>
 using Markdown*
 
+line1
+line2
+
 Here is a simple footnote[^1]
 
 [^1]: [My reference](https://www.wikipedia.org)
