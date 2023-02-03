@@ -4,8 +4,8 @@
 
 |name|score|
 |:---|:---:|
-|ycx|95|
-|lyy|59|
+|*ycx*|95<sup>1</sup>|
+|*lyy*|59|
 
 
 ```rust
