@@ -20,12 +20,12 @@ fn main() {
 
 good :+1: :smile:
 
-**task mgr**: <kbd>Ctrl</kbd><kbd> + </kbd><kbd>Space</kbd>
+**task mgr**: <kbd>Ctrl</kbd>&nbsp;<kbd>+</kbd>&nbsp;<kbd>Space</kbd>
 
 **todo list**
 - [x] wash clothes
 - [x] eat breakfast
-- [] help cat
+- [ ] help cat
 
 Here is a simple footnote[^1]
 
