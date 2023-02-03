@@ -13,3 +13,7 @@ fn main() {
 	println!("hello rust!");
 }
 ```
+
+Here is a simple footnote[^1]
+
+[^1]: My reference
