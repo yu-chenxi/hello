@@ -16,7 +16,9 @@ fn main() {
 
 **A**<sub>12</sub> is negative
 
-3<sup>*4*</sup> is = 81
+3<sup>*4*</sup>   is = 81
+
+good :+1: :smile:
 
 Here is a simple footnote[^1]
 
