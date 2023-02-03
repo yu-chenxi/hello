@@ -13,7 +13,9 @@ fn main() {
 	println!("hello rust!");
 }
 ```
+<hr>
 
+<img src="https://ycx.life/img/wallet.jpg" alt="alipay"/>
 **A**<sub>12</sub> is negative
 
 3<sup>*4*</sup>&nbsp;&nbsp;&nbsp;is = 81
