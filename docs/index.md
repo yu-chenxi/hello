@@ -16,6 +16,8 @@ fn main() {
 
 [t2](/t2)
 
+$$ S = \sum_{i=1}^n x_i $$
+
 ---
 
 > block1
